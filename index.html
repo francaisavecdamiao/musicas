@@ -3,61 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sincronizador Áudio-Texto</title>
+    <title>Sincronizador Áudio-Texto | Duolingo Style</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>🎵 Sincronizador Áudio-Texto</h1>
-    </header>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <span class="logo-icon">🎵</span>
+                <h1>Sincronizador DuoSync</h1>
+            </div>
+            <p class="subtitle">Ferramenta Interativa de Sincronização e Marcação de Áudio</p>
+        </header>
 
-    <section id="upload">
-        <div class="upload-group">
-            <label for="audioFile" class="upload-label">Selecionar Áudio (MP3/WAV)</label>
-            <input type="file" id="audioFile" accept=".mp3,.wav,audio/*">
-            <span id="audioName"></span>
-        </div>
-        <div class="upload-group">
-            <label for="textFile" class="upload-label">Selecionar Texto (.txt)</label>
-            <input type="file" id="textFile" accept=".txt">
-        </div>
-    </section>
+        <section class="upload-section">
+            <div class="upload-card">
+                <div class="upload-icon">🎧</div>
+                <h3>Arquivo de Áudio</h3>
+                <p class="file-name" id="audio-file-name">Nenhum arquivo selecionado (.mp3, .wav)</p>
+                <label for="audio-input" class="btn btn-secondary">
+                    <span>Selecionar Áudio</span>
+                    <input type="file" id="audio-input" accept="audio/mp3, audio/wav, audio/*">
+                </label>
+            </div>
 
-    <section id="controls">
-        <div class="controls-row">
-            <button id="playBtn">▶ Play</button>
-            <button id="stopBtn">⏹ Stop</button>
-            <label>
-                Velocidade:
-                <input type="range" id="speedControl" min="0.5" max="2.0" step="0.1" value="1.0">
-                <span id="speedValue">1.0x</span>
-            </label>
-            <label>
-                Volume:
-                <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="1.0">
-            </label>
-        </div>
-        <div id="progressBar">
-            <div id="progressFill"></div>
-        </div>
-    </section>
+            <div class="upload-card">
+                <div class="upload-icon">📄</div>
+                <h3>Arquivo de Texto</h3>
+                <p class="file-name" id="text-file-name">Nenhum arquivo selecionado (.txt)</p>
+                <label for="text-input" class="btn btn-secondary">
+                    <span>Selecionar Texto</span>
+                    <input type="file" id="text-input" accept=".txt">
+                </label>
+            </div>
+        </section>
 
-    <section id="mainContainer">
-        <div id="fraseContainer">
-            <div id="fraseAnterior" class="frase-secundaria"></div>
-            <div id="fraseDestaque" class="frase-destaque">🎵</div>
-            <div id="frasePosterior" class="frase-secundaria"></div>
-        </div>
-    </section>
+        <section class="player-section">
+            <div class="player-controls-main">
+                <button id="btn-play-pause" class="btn-play" disabled title="Play/Pause (Espaço)">
+                    <span id="play-icon">▶</span>
+                </button>
+                <div class="time-display">
+                    <span id="current-time">00:00.000</span> / <span id="total-time">00:00.000</span>
+                </div>
+            </div>
 
-    <section id="info">
-        <span id="contador">Frase 0 de 0</span>
-        <button id="destacarBtn">DESTACAR</button>
-    </section>
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
 
-    <footer>
-        <p>Teclas: <strong>D</strong> = Próxima | <strong>←</strong> = Voltar | <strong>Espaço</strong> = Play/Pause</p>
-    </footer>
+            <div class="player-extra-controls">
+                <div class="control-group">
+                    <label for="volume-control">🔊 Volume</label>
+                    <input type="range" id="volume-control" min="0" max="1" step="0.05" value="1">
+                </div>
+                <div class="control-group">
+                    <label for="speed-control">⚡ Velocidade: <span id="speed-val">1.0x</span></label>
+                    <input type="range" id="speed-control" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+        </section>
+
+        <section class="sync-section">
+            <div class="container-frases" id="container-frases">
+                <div class="frase-slot slot-anterior" id="slot-prev">
+                    </div>
+                
+                <div class="frase-slot slot-destaque" id="slot-curr">
+                    <div class="frase-content">🎵</div>
+                </div>
+                
+                <div class="frase-slot slot-posterior" id="slot-next">
+                    </div>
+            </div>
+
+            <div class="sync-info">
+                <div class="status-badge" id="phrase-counter">Frase 0 de 0</div>
+                <div class="action-buttons">
+                    <button id="btn-next-phrase" class="btn btn-secondary" disabled>
+                        ✨ Destacar / Avançar (D)
+                    </button>
+                    <button id="btn-mark-time" class="btn btn-action" disabled>
+                        ⚡ Marcar Tempo (M)
+                    </button>
+                </div>
+            </div>
+
+            <div class="shortcuts-bar">
+                <div class="shortcut-tag"><kbd>D</kbd> / <kbd>→</kbd> Próxima</div>
+                <div class="shortcut-tag"><kbd>←</kbd> Anterior</div>
+                <div class="shortcut-tag"><kbd>Espaço</kbd> Play/Pause</div>
+                <div class="shortcut-tag"><kbd>M</kbd> Marcar Tempo</div>
+                <div class="shortcut-tag"><kbd>Ctrl</kbd>+<kbd>E</kbd> Exportar</div>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="results-header">
+                <h2>📋 Marcações de Tempo</h2>
+                <div class="export-actions">
+                    <button id="btn-export-txt" class="btn btn-primary" disabled>
+                        📥 Exportar (.TXT)
+                    </button>
+                    <button id="btn-export-csv" class="btn btn-outline" disabled>
+                        📊 Exportar (.CSV)
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="marks-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Frase / Conteúdo</th>
+                            <th>Tempo Inicial</th>
+                            <th>Tempo Final</th>
+                            <th>Duração</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marks-table-body">
+                        <tr>
+                            <td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
 
     <script src="js/script.js"></script>
 </body>
