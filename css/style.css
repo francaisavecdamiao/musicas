@@ -181,8 +181,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 32px; /* Distância dobrada para 32px (~2 dedos) */
+    justify-content: space-between; /* Distribui topo, centro e base */
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -191,7 +190,7 @@ body {
     background-color: #000000;
     border-radius: 0px !important;
     border: 3px solid var(--laranja-escuro);
-    padding: 16px;
+    padding: 28px 16px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     position: relative;
@@ -200,6 +199,7 @@ body {
 /* SLOTS SECUNDÁRIOS */
 .frase-slot {
     width: 90%;
+    height: 48px;
     text-align: center;
     font-size: 18px;
     font-weight: 700;
@@ -210,6 +210,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto; /* Impede o slot de ocupar espaço vertical extra */
     z-index: 1;
 }
 
