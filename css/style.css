@@ -227,7 +227,7 @@ body {
     color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
     padding: 20px 30px;
-    border-radius: 0; /* cantos angulares, combinando com o quadro preto */
+    border-radius: 16px; /* cantos ARREDONDADOS - diferente do quadro preto, que é angular */
     box-shadow: 0 0 24px rgba(239, 114, 17, 0.45);
     border: none;
     width: 100%;
