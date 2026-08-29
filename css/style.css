@@ -176,7 +176,7 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO BALANCEADO */
+/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO COMPACTO */
 .container-frases {
     position: relative;
     width: 100%;
@@ -207,10 +207,10 @@ body {
     z-index: 1;
 }
 
-/* 1. FRASE ANTERIOR (Aproximada para o terço superior) */
+/* 1. FRASE ANTERIOR (Distância reduzida pela metade: 37%) */
 .container-frases > .frase-slot:first-child,
 .frase-slot.slot-prev {
-    top: 24%;
+    top: 37%;
     bottom: auto;
 }
 
@@ -267,10 +267,10 @@ body {
     transition: none;
 }
 
-/* 3. FRASE SEGUINTE (Aproximada para o terço inferior) */
+/* 3. FRASE SEGUINTE (Distância reduzida pela metade: 37%) */
 .container-frases > .frase-slot:last-child,
 .frase-slot.slot-next {
-    bottom: 24%;
+    bottom: 37%;
     top: auto;
 }
 
