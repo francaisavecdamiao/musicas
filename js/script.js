@@ -1,450 +1,268 @@
-// Gerenciamento de Estado
-let audioFile = null;
-let audioBuffer = null;
-let audioContext = null;
-let audioSource = null;
-let isPlaying = false;
-let startTime = 0;
-let pauseOffset = 0;
-let playbackRate = 1.0;
-let volume = 1.0;
+document.addEventListener("DOMContentLoaded", () => {
+    const audioElement = document.createElement("audio");
+    document.body.appendChild(audioElement);
 
-let phrases = ["🎵"];
-let currentPhraseIndex = 0;
-let timestamps = [{ start: 0, end: 0 }];
+    const audioInput = document.getElementById("audio-input");
+    const textInput = document.getElementById("text-input");
+    const audioFileName = document.getElementById("audio-file-name");
+    const textFileName = document.getElementById("text-file-name");
+    
+    const btnPlayPause = document.getElementById("btn-play-pause");
+    const btnPlaySync = document.getElementById("btn-play-sync");
+    const playIcon = document.getElementById("play-icon");
+    
+    const currentTimeEl = document.getElementById("current-time");
+    const totalTimeEl = document.getElementById("total-time");
+    const progressBar = document.getElementById("progress-bar");
+    const progressContainer = document.getElementById("progress-container");
+    
+    const volumeControl = document.getElementById("volume-control");
+    const speedControl = document.getElementById("speed-control");
+    const speedVal = document.getElementById("speed-val");
 
-// Elementos do DOM
-const audioInput = document.getElementById('audio-input');
-const textInput = document.getElementById('text-input');
-const audioFileName = document.getElementById('audio-file-name');
-const textFileName = document.getElementById('text-file-name');
+    const slotPrev = document.getElementById("slot-prev");
+    const slotCurr = document.getElementById("slot-curr");
+    const slotNext = document.getElementById("slot-next");
+    const phraseCounter = document.getElementById("phrase-counter");
+    
+    const btnMarkTime = document.getElementById("btn-mark-time");
+    const btnExportTxt = document.getElementById("btn-export-txt");
+    const btnExportCsv = document.getElementById("btn-export-csv");
+    const marksTableBody = document.getElementById("marks-table-body");
 
-const btnPlayPause = document.getElementById('btn-play-pause');
-const playIcon = document.getElementById('play-icon');
-const currentTimeEl = document.getElementById('current-time');
-const totalTimeEl = document.getElementById('total-time');
-const progressBar = document.getElementById('progress-bar');
-const progressContainer = document.getElementById('progress-container');
+    let phrases = [];
+    let currentIndex = 0;
+    let marks = [];
 
-const volumeControl = document.getElementById('volume-control');
-const speedControl = document.getElementById('speed-control');
-const speedVal = document.getElementById('speed-val');
-
-const slotPrev = document.getElementById('slot-prev');
-const slotCurr = document.getElementById('slot-curr');
-const slotNext = document.getElementById('slot-next');
-const phraseCounter = document.getElementById('phrase-counter');
-
-const btnNextPhrase = document.getElementById('btn-next-phrase');
-const btnMarkTime = document.getElementById('btn-mark-time');
-const btnExportTxt = document.getElementById('btn-export-txt');
-const btnExportCsv = document.getElementById('btn-export-csv');
-const tableBody = document.getElementById('marks-table-body');
-
-// Inicialização do AudioContext
-function getAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Formatação de Tempo (MM:SS.mmm)
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "00:00.000";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        const millis = Math.floor((seconds % 1) * 1000);
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(3, '0')}`;
     }
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
+
+    // Carregar Áudio
+    audioInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            audioFileName.textContent = file.name;
+            const fileURL = URL.createObjectURL(file);
+            audioElement.src = fileURL;
+            btnPlayPause.disabled = false;
+            if (btnPlaySync) btnPlaySync.disabled = false;
+        }
+    });
+
+    // Carregar Texto
+    textInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            textFileName.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const text = event.target.result;
+                phrases = text.split(/\r?\n/).map(p => p.trim()).filter(p => p.length > 0);
+                currentIndex = 0;
+                marks = phrases.map(p => ({ text: p, start: null, end: null }));
+                
+                if (phrases.length > 0) {
+                    btnMarkTime.disabled = false;
+                    btnExportTxt.disabled = false;
+                    btnExportCsv.disabled = false;
+                    updateDisplay();
+                    renderTable();
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Controle de Play/Pause Unificado
+    function togglePlay() {
+        if (audioElement.paused) {
+            audioElement.play();
+            playIcon.textContent = "❚❚";
+            if (btnPlaySync) btnPlaySync.textContent = "❚❚";
+        } else {
+            audioElement.pause();
+            playIcon.textContent = "▶";
+            if (btnPlaySync) btnPlaySync.textContent = "▶";
+        }
     }
-    return audioContext;
-}
 
-// Utilitário: Formatar Segundos em MM:SS.mmm
-function formatTime(sec) {
-    if (isNaN(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    const ms = Math.floor((sec % 1) * 1000);
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
-}
+    btnPlayPause.addEventListener("click", togglePlay);
+    if (btnPlaySync) btnPlaySync.addEventListener("click", togglePlay);
 
-// Upload de Áudio
-audioInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    audioFile = file;
-    audioFileName.textContent = file.name;
+    audioElement.addEventListener("timeupdate", () => {
+        const current = audioElement.currentTime;
+        const duration = audioElement.duration || 0;
+        currentTimeEl.textContent = formatTime(current);
+        totalTimeEl.textContent = formatTime(duration);
+        
+        if (duration > 0) {
+            progressbarUpdate(current, duration);
+        }
+    });
 
-    const arrayBuffer = await file.arrayBuffer();
-    const ctx = getAudioContext();
-    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    audioElement.addEventListener("loadedmetadata", () => {
+        totalTimeEl.textContent = formatTime(audioElement.duration);
+    });
 
-    totalTimeEl.textContent = formatTime(audioBuffer.duration);
-    btnPlayPause.disabled = false;
-    pauseOffset = 0;
-    updateProgressUI();
-});
+    function progressbarUpdate(current, duration) {
+        const percent = (current / duration) * 100;
+        progressBar.style.width = `${percent}%`;
+    }
 
-// Upload de Texto
-textInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    textFileName.textContent = file.name;
+    progressContainer.addEventListener("click", (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / progressContainer.clientWidth;
+        if (audioElement.duration) {
+            audioElement.currentTime = pos * audioElement.duration;
+        }
+    });
 
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-        const lines = evt.target.result
-            .split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
+    volumeControl.addEventListener("input", (e) => {
+        audioElement.volume = e.target.value;
+    });
 
-        phrases = ["🎵", ...lines];
-        timestamps = phrases.map(() => ({ start: null, end: null }));
-        timestamps[0] = { start: 0, end: 0 };
+    speedControl.addEventListener("input", (e) => {
+        const val = e.target.value;
+        audioElement.playbackRate = val;
+        speedVal.textContent = `${val}x`;
+    });
 
-        currentPhraseIndex = 0;
-        btnNextPhrase.disabled = false;
-        btnMarkTime.disabled = false;
-        btnExportTxt.disabled = false;
-        btnExportCsv.disabled = false;
+    // Atualizar Display do Sincronizador
+    function updateDisplay() {
+        if (phrases.length === 0) return;
 
-        renderPhrases();
+        // Frase Anterior
+        if (currentIndex > 0) {
+            slotPrev.textContent = phrases[currentIndex - 1];
+        } else {
+            slotPrev.textContent = "";
+        }
+
+        // Frase Atual (Destaque)
+        slotCurr.innerHTML = `<div class="frase-content">${phrases[currentIndex]}</div>`;
+
+        // Frase Posterior
+        if (currentIndex < phrases.length - 1) {
+            slotNext.textContent = phrases[currentIndex + 1];
+        } else {
+            slotNext.textContent = "";
+        }
+
+        phraseCounter.textContent = `Frase ${currentIndex + 1} de ${phrases.length}`;
+    }
+
+    // Ação Unificada de Marcar Tempo e Avançar
+    function markAndNext() {
+        if (phrases.length === 0) return;
+        const currentTime = audioElement.currentTime;
+
+        // Define o tempo inicial se não houver
+        if (marks[currentIndex].start === null) {
+            marks[currentIndex].start = currentTime;
+        }
+        
+        // Atualiza o tempo final com o momento atual
+        marks[currentIndex].end = currentTime;
+
         renderTable();
-    };
-    reader.readAsText(file);
-});
 
-// Reprodução de Áudio
-function playAudio() {
-    if (!audioBuffer) return;
-    const ctx = getAudioContext();
-
-    audioSource = ctx.createBufferSource();
-    audioSource.buffer = audioBuffer;
-    audioSource.playbackRate.value = playbackRate;
-
-    const gainNode = ctx.createGain();
-    gainNode.gain.value = volume;
-
-    audioSource.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    startTime = ctx.currentTime - (pauseOffset / playbackRate);
-    audioSource.start(0, pauseOffset);
-    isPlaying = true;
-
-    playIcon.textContent = '⏸';
-    requestAnimationFrame(updatePlaybackProgress);
-
-    audioSource.onended = () => {
-        if (getCurrentAudioTime() >= audioBuffer.duration) {
-            isPlaying = false;
-            playIcon.textContent = '▶';
-            pauseOffset = 0;
-        }
-    };
-}
-
-function pauseAudio() {
-    if (!audioSource || !isPlaying) return;
-    pauseOffset = getCurrentAudioTime();
-    audioSource.stop();
-    isPlaying = false;
-    playIcon.textContent = '▶';
-}
-
-function getCurrentAudioTime() {
-    if (!isPlaying) return pauseOffset;
-    const ctx = getAudioContext();
-    const elapsed = (ctx.currentTime - startTime) * playbackRate;
-    return Math.min(elapsed, audioBuffer ? audioBuffer.duration : 0);
-}
-
-function updatePlaybackProgress() {
-    if (!isPlaying) return;
-    const curr = getCurrentAudioTime();
-    currentTimeEl.textContent = formatTime(curr);
-    updateProgressUI();
-    requestAnimationFrame(updatePlaybackProgress);
-}
-
-function updateProgressUI() {
-    if (!audioBuffer) return;
-    const pct = (getCurrentAudioTime() / audioBuffer.duration) * 100;
-    progressBar.style.width = `${pct}%`;
-}
-
-// Avançar/Retroceder no Player
-progressContainer.addEventListener('click', (e) => {
-    if (!audioBuffer) return;
-    const rect = progressContainer.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const pct = clickX / rect.width;
-    pauseOffset = pct * audioBuffer.duration;
-
-    if (isPlaying) {
-        audioSource.stop();
-        playAudio();
-    } else {
-        currentTimeEl.textContent = formatTime(pauseOffset);
-        updateProgressUI();
-    }
-});
-
-btnPlayPause.addEventListener('click', () => {
-    if (isPlaying) pauseAudio();
-    else playAudio();
-});
-
-// Controles de Volume e Velocidade
-volumeControl.addEventListener('input', (e) => {
-    volume = parseFloat(e.target.value);
-});
-
-speedControl.addEventListener('input', (e) => {
-    playbackRate = parseFloat(e.target.value);
-    speedVal.textContent = `${playbackRate.toFixed(1)}x`;
-});
-
-// Renderização dos Slots de Frase
-function renderPhrases() {
-    const total = phrases.length;
-    phraseCounter.textContent = `Frase ${currentPhraseIndex} de ${total - 1}`;
-
-    // Anterior
-    if (currentPhraseIndex > 0) {
-        const prevText = phrases[currentPhraseIndex - 1];
-        slotPrev.innerHTML = prevText === "🎵" ? '<span>🎵</span>' : prevText;
-    } else {
-        slotPrev.innerHTML = '';
-    }
-
-    // Destaque Laranja com Texto Branco Forçado + transição suave
-    const currText = phrases[currentPhraseIndex];
-    updateCurrentSlot(currText);
-
-    // Próxima
-    if (currentPhraseIndex < total - 1) {
-        const nextText = phrases[currentPhraseIndex + 1];
-        slotNext.innerHTML = nextText === "🎵" ? '<span>🎵</span>' : nextText;
-    } else {
-        slotNext.innerHTML = '';
-    }
-}
-
-// Atualiza o slot em destaque com efeito "karaokê": a CAIXA laranja
-// (.frase-content, já fixa no HTML) nunca é recriada nem some - ela
-// fica parada o tempo todo, é isso que mantém o quadro sem piscar.
-// Só o TEXTO (um <span class="frase-text"> dentro dela) é trocado, e a
-// cada troca ele sobe + cresce do tamanho pequeno até o tamanho final
-// da caixa, com uma transição CSS de verdade.
-function updateCurrentSlot(text) {
-    const contentEl = slotCurr.querySelector('.frase-content');
-    let textEl = contentEl.querySelector('.frase-text');
-
-    // Na primeira chamada, o HTML só tem o texto "🎵" solto dentro da
-    // caixa (sem o span) - criamos o span uma única vez aqui.
-    if (!textEl) {
-        contentEl.innerHTML = '';
-        textEl = document.createElement('span');
-        textEl.className = 'frase-text';
-        contentEl.appendChild(textEl);
-    }
-
-    // 1) Aplica o estado inicial (pequeno, embaixo, transparente) e já
-    //    coloca o novo texto nesse estado.
-    textEl.classList.add('is-entering');
-    textEl.textContent = text;
-
-    // 2) Força o navegador a calcular/"fotografar" esse estado inicial
-    //    ANTES de tirar a classe. Sem isso, o navegador às vezes junta
-    //    as duas mudanças no mesmo frame e a transição é pulada (o
-    //    "piscar" que você ainda via).
-    void textEl.offsetHeight;
-
-    // 3) Remove a classe: agora existe um "antes" (pequeno/embaixo) e
-    //    um "depois" (tamanho normal) já pintados em frames diferentes,
-    //    então a transição do CSS roda de verdade, subindo e crescendo
-    //    suavemente até o tamanho/fonte da caixa laranja.
-    textEl.classList.remove('is-entering');
-}
-
-// Navegação entre Frases + Marcação Automática
-function nextPhrase() {
-    if (currentPhraseIndex < phrases.length - 1) {
-        currentPhraseIndex++;
-        renderPhrases();
-        markTimestamp();
-        highlightActiveRow();
-    }
-}
-
-function prevPhrase() {
-    if (currentPhraseIndex > 0) {
-        currentPhraseIndex--;
-        renderPhrases();
-        highlightActiveRow();
-    }
-}
-
-// Marcação de Tempo
-function markTimestamp() {
-    if (currentPhraseIndex === 0) return;
-
-    const now = getCurrentAudioTime();
-
-    if (!timestamps[currentPhraseIndex]) {
-        timestamps[currentPhraseIndex] = { start: null, end: null };
-    }
-
-    timestamps[currentPhraseIndex].start = now;
-
-    if (currentPhraseIndex > 1 && timestamps[currentPhraseIndex - 1].start !== null) {
-        timestamps[currentPhraseIndex - 1].end = now;
-    }
-
-    renderTable();
-}
-
-// Renderizar Tabela
-function renderTable() {
-    if (phrases.length <= 1) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td></tr>';
-        return;
-    }
-
-    let html = '';
-    for (let i = 0; i < phrases.length; i++) {
-        const phrase = phrases[i];
-        const ts = timestamps[i] || { start: null, end: null };
-        const isF0 = i === 0;
-
-        const startStr = ts.start !== null ? formatTime(ts.start) : '--:--.---';
-        const endStr = ts.end !== null ? formatTime(ts.end) : '--:--.---';
-
-        let durationStr = '--:--.---';
-        if (ts.start !== null && ts.end !== null && ts.end >= ts.start) {
-            durationStr = formatTime(ts.end - ts.start);
-        }
-
-        const activeClass = i === currentPhraseIndex ? 'style="background-color: #FFF3E0; font-weight: bold;"' : '';
-
-        html += `
-            <tr ${activeClass} id="row-phrase-${i}">
-                <td>F${i}</td>
-                <td>${phrase}</td>
-                <td><span class="badge-time">${startStr}</span></td>
-                <td><span class="badge-time">${endStr}</span></td>
-                <td>${durationStr}</td>
-                <td>
-                    ${!isF0 ? `<button class="btn-del" onclick="clearMark(${i})">✕</button>` : ''}
-                </td>
-            </tr>
-        `;
-    }
-    tableBody.innerHTML = html;
-}
-
-function clearMark(index) {
-    if (timestamps[index]) {
-        timestamps[index] = { start: null, end: null };
-        renderTable();
-    }
-}
-
-// Rola APENAS o container da tabela (A página web inteira não se move)
-function highlightActiveRow() {
-    const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
-    const tableWrapper = document.querySelector('.table-wrapper');
-
-    if (activeRow && tableWrapper) {
-        const rowTop = activeRow.offsetTop;
-        const rowHeight = activeRow.offsetHeight;
-        const wrapperScrollTop = tableWrapper.scrollTop;
-        const wrapperHeight = tableWrapper.clientHeight;
-
-        if (rowTop < wrapperScrollTop) {
-            tableWrapper.scrollTop = rowTop;
-        } else if (rowTop + rowHeight > wrapperScrollTop + wrapperHeight) {
-            tableWrapper.scrollTop = rowTop + rowHeight - wrapperHeight;
+        // Avança para a próxima frase se houver
+        if (currentIndex < phrases.length - 1) {
+            currentIndex++;
+            updateDisplay();
         }
     }
-}
 
-// Exportar Arquivos
-btnExportTxt.addEventListener('click', () => exportData('txt'));
-btnExportCsv.addEventListener('click', () => exportData('csv'));
+    function prevPhrase() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateDisplay();
+        }
+    }
 
-function exportData(format) {
-    const audioName = audioFile ? audioFile.name : 'audio.mp3';
-    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    function nextPhrase() {
+        if (currentIndex < phrases.length - 1) {
+            currentIndex++;
+            updateDisplay();
+        }
+    }
 
-    if (format === 'txt') {
-        let content = `# Temporização - Áudio: ${audioName}\n`;
-        content += `# Gerado em: ${nowStr}\n`;
-        content += `# Total de frases: ${phrases.length - 1}\n\n`;
+    btnMarkTime.addEventListener("click", markAndNext);
 
-        phrases.forEach((phrase, i) => {
-            const ts = timestamps[i] || { start: null, end: null };
-            if (i === 0) {
-                content += `FRASE 0: 🎵 - 00:00.000 (início)\n`;
-            } else {
-                const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
-                const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
-                const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
-                content += `FRASE ${i}: "${phrase}"\n`;
-                content += `  Início: ${s}\n`;
-                content += `  Fim: ${e}\n`;
-                content += `  Duração: ${dur}\n\n`;
+    // Atalhos de Teclado
+    document.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT") return;
+
+        if (e.code === "Space") {
+            e.preventDefault();
+            togglePlay();
+        } else if (e.code === "KeyM" || e.code === "KeyC" || e.code === "ArrowRight") {
+            e.preventDefault();
+            markAndNext();
+        } else if (e.code === "ArrowLeft") {
+            e.preventDefault();
+            prevPhrase();
+        }
+    });
+
+    // Tabela de Marcações
+    function renderTable() {
+        marksTableBody.innerHTML = "";
+        marks.forEach((mark, index) => {
+            const tr = document.createElement("tr");
+            if (index === currentIndex) {
+                tr.style.backgroundColor = "#FFF5EB";
             }
+            
+            const duration = (mark.start !== null && mark.end !== null && mark.end >= mark.start) 
+                ? (mark.end - mark.start).toFixed(3) + "s" 
+                : "-";
+
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${mark.text}</td>
+                <td>${mark.start !== null ? formatTime(mark.start) : "-"}</td>
+                <td>${mark.end !== null ? formatTime(mark.end) : "-"}</td>
+                <td>${duration}</td>
+                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="jumpTo(${index})">Ir</button></td>
+            `;
+            marksTableBody.appendChild(tr);
         });
-
-        downloadFile(content, 'sincronizacao_audio.txt', 'text/plain');
-    } else if (format === 'csv') {
-        let content = `ID,Frase,Inicio,Fim,Duracao\n`;
-        phrases.forEach((phrase, i) => {
-            const ts = timestamps[i] || { start: null, end: null };
-            const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
-            const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
-            const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
-            content += `${i},"${phrase.replace(/"/g, '""')}",${s},${e},${dur}\n`;
-        });
-
-        downloadFile(content, 'sincronizacao_audio.csv', 'text/csv');
     }
-}
 
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type: `${type};charset=utf-8;` });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
+    window.jumpTo = function(index) {
+        currentIndex = index;
+        updateDisplay();
+        if (marks[index].start !== null) {
+            audioElement.currentTime = marks[index].start;
+        }
+        renderTable();
+    };
 
-// Intercepta e Bloqueia Ações Padrão de Rolagem na Janela Principal
-window.addEventListener('keydown', (e) => {
-    if (['Space', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.code) &&
-        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-        e.preventDefault();
-    }
-}, false);
+    // Exportar Arquivos
+    btnExportTxt.addEventListener("click", () => {
+        const textContent = marks.map(m => `[${formatTime(m.start || 0)} --> ${formatTime(m.end || 0)}] ${m.text}`).join("\n");
+        downloadFile(textContent, "marcacoes.txt", "text/plain");
+    });
 
-// Atalhos do Teclado
-document.addEventListener('keydown', (e) => {
-    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    btnExportCsv.addEventListener("click", () => {
+        const csvContent = "Index,Texto,Inicio,Fim\n" + marks.map((m, i) => `${i+1},"${m.text}","${formatTime(m.start || 0)}","${formatTime(m.end || 0)}"`).join("\n");
+        downloadFile(csvContent, "marcacoes.csv", "text/csv");
+    });
 
-    // N, Enter, Espaço ou Seta Direita avançam a frase e registram a minutagem
-    if (['n', 'N', 'Enter', 'ArrowRight'].includes(e.key) || e.code === 'Space') {
-        e.preventDefault();
-        nextPhrase();
-    }
-    else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        prevPhrase();
-    }
-    else if (e.key === 'm' || e.key === 'M') {
-        e.preventDefault();
-        markTimestamp();
-    }
-    else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
-        e.preventDefault();
-        exportData('txt');
+    function downloadFile(content, filename, contentType) {
+        const blob = new Blob([content], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 });
-
-btnNextPhrase.addEventListener('click', nextPhrase);
-btnMarkTime.addEventListener('click', markTimestamp);
