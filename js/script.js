@@ -9,9 +9,9 @@ let pauseOffset = 0;
 let playbackRate = 1.0;
 let volume = 1.0;
 
-let phrases = ["🎵"]; // Index 0 is music emoji
+let phrases = ["🎵"];
 let currentPhraseIndex = 0;
-let timestamps = [{ start: 0, end: 0 }]; // F0 initial mark
+let timestamps = [{ start: 0, end: 0 }];
 
 // DOM Elements
 const audioInput = document.getElementById('audio-input');
@@ -94,7 +94,7 @@ textInput.addEventListener('change', (e) => {
         
         phrases = ["🎵", ...lines];
         timestamps = phrases.map(() => ({ start: null, end: null }));
-        timestamps[0] = { start: 0, end: 0 }; // Marker for F0
+        timestamps[0] = { start: 0, end: 0 };
         
         currentPhraseIndex = 0;
         btnNextPhrase.disabled = false;
@@ -200,7 +200,7 @@ speedControl.addEventListener('input', (e) => {
     speedVal.textContent = `${playbackRate.toFixed(1)}x`;
 });
 
-// Render Phrase Container (3 Slots)
+// Render Phrase Container
 function renderPhrases() {
     const total = phrases.length;
     phraseCounter.textContent = `Frase ${currentPhraseIndex} de ${total - 1}`;
@@ -213,7 +213,7 @@ function renderPhrases() {
         slotPrev.innerHTML = '';
     }
 
-    // Curr (Destaque)
+    // Curr (Destaque Laranja + Texto Branco)
     const currText = phrases[currentPhraseIndex];
     if (currText === "🎵") {
         slotCurr.innerHTML = '<div class="frase-content frase-musica">🎵</div>';
@@ -235,8 +235,8 @@ function nextPhrase() {
     if (currentPhraseIndex < phrases.length - 1) {
         currentPhraseIndex++;
         renderPhrases();
+        markTimestamp();
         highlightActiveRow();
-        markTimestamp(); // Registra o tempo automaticamente ao avançar
     }
 }
 
@@ -250,24 +250,20 @@ function prevPhrase() {
 
 // Timestamp Marking
 function markTimestamp() {
-    if (currentPhraseIndex === 0) return; // F0 is fixed at 00:00
+    if (currentPhraseIndex === 0) return;
 
     const now = getCurrentAudioTime();
     
-    // Set end of previous, start of current
     if (!timestamps[currentPhraseIndex]) {
         timestamps[currentPhraseIndex] = { start: null, end: null };
     }
     
-    // Set current phrase start
     timestamps[currentPhraseIndex].start = now;
 
-    // Auto-close previous phrase end if not set
     if (currentPhraseIndex > 1 && timestamps[currentPhraseIndex - 1].start !== null) {
         timestamps[currentPhraseIndex - 1].end = now;
     }
 
-    // Trigger visual feedback
     containerFrases.classList.add('flash-success');
     setTimeout(() => containerFrases.classList.remove('flash-success'), 400);
 
@@ -320,12 +316,23 @@ function clearMark(index) {
     }
 }
 
+// Rola APENAS a div da tabela internamente, sem mexer na página inteira
 function highlightActiveRow() {
     const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
-    if (activeRow) {
-        activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const tableWrapper = document.querySelector('.table-wrapper');
+    
+    if (activeRow && tableWrapper) {
+        const rowTop = activeRow.offsetTop;
+        const rowHeight = activeRow.offsetHeight;
+        const wrapperScrollTop = tableWrapper.scrollTop;
+        const wrapperHeight = tableWrapper.clientHeight;
+
+        if (rowTop < wrapperScrollTop) {
+            tableWrapper.scrollTop = rowTop;
+        } else if (rowTop + rowHeight > wrapperScrollTop + wrapperHeight) {
+            tableWrapper.scrollTop = rowTop + rowHeight - wrapperHeight;
+        }
     }
-    renderTable();
 }
 
 // Export Handling
@@ -379,27 +386,31 @@ function downloadFile(content, filename, type) {
     link.click();
 }
 
-// Keyboard Controls
+// Bloqueio Global de Rolagem pelas Teclas de Comando
+window.addEventListener('keydown', (e) => {
+    if (['Space', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.code) && 
+        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+    }
+}, false);
+
+// Atalhos do Teclado
 document.addEventListener('keydown', (e) => {
-    // Ignora atalhos se estiver digitando em caixas de texto
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    // N, Enter, D ou Seta Direita -> Avança a frase e marca o tempo automaticamente
-    if (['n', 'N', 'Enter', 'd', 'D', 'ArrowRight'].includes(e.key)) {
+    // Teclas N, Enter ou Seta Direita avançam e marcam tempo automaticamente
+    if (['n', 'N', 'Enter', 'ArrowRight'].includes(e.key) || e.code === 'Space') {
         e.preventDefault();
         nextPhrase();
     } 
-    // Seta Esquerda -> Volta para a frase anterior
     else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         prevPhrase();
     } 
-    // M -> Remarca o tempo manualmente para a frase atual
     else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         markTimestamp();
     } 
-    // Ctrl + E -> Exportar TXT
     else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
         e.preventDefault();
         exportData('txt');
