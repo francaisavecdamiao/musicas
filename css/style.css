@@ -176,47 +176,49 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO 1:1 (TELÃO ONDE AS FRASES CORREM) */
+/* QUADRADO PRETO FIXO 1:1 */
 .container-frases {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: center; /* Centraliza verticalmente o bloco de frases */
+    gap: 2px; /* Reduzido para deixar as frases quase coladas */
     width: 100%;
     max-width: 400px;
-    aspect-ratio: 1 / 1; /* Força proporção quadrada perfeita */
-    min-height: 0;      /* Impede que o Flexbox ignore o aspect-ratio */
+    aspect-ratio: 1 / 1;
+    min-height: 0;
     margin: 0 auto;
     background-color: #000000;
-    border-radius: 0px !important; /* Cantos 100% angulares */
+    border-radius: 0px !important;
     border: 3px solid var(--laranja-escuro);
-    padding: 16px;
+    padding: 12px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     position: relative;
 }
 
-/* Slots de Frases (Anterior e Posterior) */
+/* Slots de Frases Secundárias (Anterior e Posterior) */
 .frase-slot {
     width: 90%;
     text-align: center;
-    font-size: 15px;
-    color: #888888;
-    min-height: 24px;
+    font-size: 18px; /* Fonte aumentada */
+    font-weight: 700; /* Adicionado negrito */
+    color: #A0A0A0; /* Ajustado contraste para melhor leitura */
+    min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* RETÂNGULO LARANJA EM DESTAQUE (CANTOS ARREDONDADOS + TEXTO BRANCO) */
+/* RETÂNGULO LARANJA EM DESTAQUE */
 #slot-curr,
 .slot-destaque {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1; /* Ocupa o centro do quadrado proporcionalmente */
+    flex: 0 0 auto; /* Impede que o elemento estique e afaste as outras frases */
+    margin: 2px 0;
 }
 
 #slot-curr,
@@ -229,8 +231,8 @@ body {
     font-weight: 800;
     color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
-    padding: 16px 20px;
-    border-radius: 16px; /* Cantos arredondados do retângulo interno */
+    padding: 14px 20px;
+    border-radius: 16px;
     box-shadow: 0 0 20px rgba(239, 114, 17, 0.5);
     border: none;
     width: 92%;
