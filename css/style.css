@@ -338,12 +338,16 @@ body {
 .slot-destaque {
     min-height: 90px;
     width: 95%;
+    color: #FFFFFF !important;
 }
 
-.slot-destaque .frase-content {
+.slot-destaque .frase-content,
+.slot-destaque .frase-content *,
+.slot-destaque span,
+.slot-destaque div {
     font-family: 'Feather-Bold', sans-serif;
     font-size: 26px;
-    color: #FFFFFF !important; /* Força a cor BRANCA do texto */
+    color: #FFFFFF !important; /* Elimina qualquer tom verde e força o branco */
     background-color: var(--laranja-escuro);
     padding: 20px 30px;
     border-radius: 16px;
