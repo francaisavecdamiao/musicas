@@ -182,7 +182,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* Espaçamento ajustado para não empilhar/sobrepor */
+    gap: 16px; /* Distância equivalente a 1 dedo (16px) */
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -197,7 +197,7 @@ body {
     position: relative;
 }
 
-/* SLOTS SECUNDÁRIOS: Fonte maior, negrito e respiro visual claro */
+/* SLOTS SECUNDÁRIOS */
 .frase-slot {
     width: 90%;
     text-align: center;
