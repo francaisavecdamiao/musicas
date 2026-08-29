@@ -176,9 +176,9 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO ANCORADO */
+/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO BALANCEADO */
 .container-frases {
-    position: relative; /* Âncora para as frases absolutas */
+    position: relative;
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -207,14 +207,14 @@ body {
     z-index: 1;
 }
 
-/* 1. FRASE ANTERIOR (Fixada no Topo - 12% da margem superior) */
+/* 1. FRASE ANTERIOR (Aproximada para o terço superior) */
 .container-frases > .frase-slot:first-child,
 .frase-slot.slot-prev {
-    top: 12%;
+    top: 24%;
     bottom: auto;
 }
 
-/* 2. FRASE DESTAQUE (Fixada exatamente no Centro) */
+/* 2. FRASE DESTAQUE (Centro exato) */
 #slot-curr,
 .slot-destaque {
     position: absolute;
@@ -267,10 +267,10 @@ body {
     transition: none;
 }
 
-/* 3. FRASE SEGUINTE (Fixada na Base - 12% da margem inferior) */
+/* 3. FRASE SEGUINTE (Aproximada para o terço inferior) */
 .container-frases > .frase-slot:last-child,
 .frase-slot.slot-next {
-    bottom: 12%;
+    bottom: 24%;
     top: auto;
 }
 
