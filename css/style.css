@@ -194,19 +194,20 @@ body {
 }
 
 /*
-   Retângulo em destaque (laranja) da frase atual.
-   Antes essas regras dependiam de uma classe ".slot-destaque" que
-   precisava estar em algum elemento pai vindo do HTML — se essa classe
-   não estivesse exatamente ali, o fundo/texto branco simplesmente não
-   era aplicado e o texto caía na cor herdada (o que dava a aparência
-   "verde"). Agora a regra usa o ID #slot-curr, que o script.js já
-   garante que existe, então o branco sempre é aplicado.
+   Cor branca forçada em qualquer coisa dentro do #slot-curr, garantido
+   pelo ID (que o script.js já usa via getElementById, então sempre
+   existe), sem depender de nenhuma classe adicional no HTML.
 */
 #slot-curr,
 #slot-curr * {
     color: #FFFFFF !important;
 }
 
+/*
+   A CAIXA laranja em si. Fica sempre parada (sem transição, sem
+   sumir) — é isso que "mantém o quadro" pedido: o retângulo nunca é
+   recriado nem pisca, só o texto de dentro dele se move.
+*/
 #slot-curr .frase-content {
     font-size: 24px;
     font-weight: 800;
@@ -219,26 +220,36 @@ body {
     width: 100%;
     text-align: center;
     word-break: break-word;
+    overflow: hidden; /* a frase "nasce" de baixo da caixa e não vaza pra fora dela */
+}
 
-    /* Estado "assentado" (posição final) */
+/*
+   O TEXTO da frase, isolado num <span> por dentro da caixa. Ele já
+   nasce no tamanho/fonte final da caixa (herda os 24px/800 do pai) —
+   só o efeito de entrada (abaixo do exemplo .is-entering) encolhe e
+   abaixa ele temporariamente antes de "subir e crescer" de volta.
+*/
+#slot-curr .frase-text {
+    display: inline-block;
+    transform-origin: center bottom;
     transform: translateY(0) scale(1);
     opacity: 1;
-    /* Movimento suave que "estoura" um pouquinho e para rápido */
+    /* Sobe suave, cresce até o tamanho da caixa e assenta rápido */
     transition:
-        transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
-        opacity 0.2s ease-out;
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.3s ease-out;
     will-change: transform, opacity;
 }
 
 /*
-   Estado inicial aplicado por uma fração de segundo pelo JS sempre que
-   uma nova frase entra em destaque. Como o elemento .frase-content
-   agora é reaproveitado (não recriado a cada troca), a transição acima
-   consegue animar DESSE estado até o estado final — em vez de um "pop"
-   seco (o piscar que você via antes).
+   Estado "karaokê": a frase começa pequena (como se ainda estivesse
+   no tamanho do slot de baixo/próxima) e um pouco abaixo da posição
+   final, invisível. O JS aplica essa classe, força o navegador a
+   registrar esse estado (reflow) e só depois remove — garantindo que
+   a transição acima sempre rode do zero, sem pular direto pro final.
 */
-#slot-curr .frase-content.is-entering {
-    transform: translateY(10px) scale(0.94);
+#slot-curr .frase-text.is-entering {
+    transform: translateY(26px) scale(0.7);
     opacity: 0;
     transition: none;
 }
