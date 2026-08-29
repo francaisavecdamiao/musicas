@@ -1,146 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sincronizador Áudio-Texto | Duolingo Style</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Fontes do Google Fonts como fallback/padrão limpo -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quadro de Frases</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Cabeçalho -->
-        <header class="app-header">
-            <div class="logo-container">
-                <span class="logo-icon">🎵</span>
-                <h1>Sincronizador DuoSync</h1>
-            </div>
-            <p class="subtitle">Ferramenta Interativa de Sincronização e Marcação de Áudio</p>
-        </header>
 
-        <!-- Seção de Upload -->
-        <section class="upload-section">
-            <div class="upload-card">
-                <div class="upload-icon">🎧</div>
-                <h3>Arquivo de Áudio</h3>
-                <p class="file-name" id="audio-file-name">Nenhum arquivo selecionado (.mp3, .wav)</p>
-                <label for="audio-input" class="btn btn-secondary">
-                    <span>Selecionar Áudio</span>
-                    <input type="file" id="audio-input" accept="audio/mp3, audio/wav, audio/*">
-                </label>
-            </div>
-
-            <div class="upload-card">
-                <div class="upload-icon">📄</div>
-                <h3>Arquivo de Texto</h3>
-                <p class="file-name" id="text-file-name">Nenhum arquivo selecionado (.txt)</p>
-                <label for="text-input" class="btn btn-secondary">
-                    <span>Selecionar Texto</span>
-                    <input type="file" id="text-input" accept=".txt">
-                </label>
-            </div>
-        </section>
-
-        <!-- Player de Áudio -->
-        <section class="player-section">
-            <div class="player-controls-main">
-                <button id="btn-play-pause" class="btn-play" disabled title="Play/Pause (Espaço)">
-                    <span id="play-icon">▶</span>
-                </button>
-                <div class="time-display">
-                    <span id="current-time">00:00.000</span> / <span id="total-time">00:00.000</span>
-                </div>
-            </div>
-
-            <div class="progress-bar-container" id="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-
-            <div class="player-extra-controls">
-                <div class="control-group">
-                    <label for="volume-control">🔊 Volume</label>
-                    <input type="range" id="volume-control" min="0" max="1" step="0.05" value="1">
-                </div>
-                <div class="control-group">
-                    <label for="speed-control">⚡ Velocidade: <span id="speed-val">1.0x</span></label>
-                    <input type="range" id="speed-control" min="0.5" max="2.0" step="0.1" value="1.0">
-                </div>
-            </div>
-        </section>
-
-        <!-- Container Central das Frases (Visual 4x4) -->
-        <section class="sync-section">
-            <div class="container-frases" id="container-frases">
-                <div class="frase-slot slot-anterior" id="slot-prev">
-                    <!-- Frase n-1 -->
-                </div>
-                
-                <div class="frase-slot slot-destaque" id="slot-curr">
-                    <!-- Frase n (Destaque) -->
-                    <div class="frase-content">🎵</div>
-                </div>
-                
-                <div class="frase-slot slot-posterior" id="slot-next">
-                    <!-- Frase n+1 -->
-                </div>
-            </div>
-
-            <!-- Meta & Atalhos -->
-            <div class="sync-info">
-                <div class="status-badge" id="phrase-counter">Frase 0 de 0</div>
-                <button id="btn-mark-time" class="btn btn-action" disabled>
-                    ⚡ Marcar Tempo (M)
-                </button>
-            </div>
-
-            <div class="shortcuts-bar">
-                <div class="shortcut-tag"><kbd>C</kbd> / <kbd>→</kbd> Próxima</div>
-                <div class="shortcut-tag"><kbd>←</kbd> Anterior</div>
-                <div class="shortcut-tag"><kbd>Espaço</kbd> Play/Pause</div>
-                <div class="shortcut-tag"><kbd>M</kbd> Marcar Tempo</div>
-                <div class="shortcut-tag"><kbd>Ctrl</kbd>+<kbd>E</kbd> Exportar</div>
-            </div>
-        </section>
-
-        <!-- Tabela de Temporização / Preview -->
-        <section class="results-section">
-            <div class="results-header">
-                <h2>📋 Marcações de Tempo</h2>
-                <div class="export-actions">
-                    <button id="btn-export-txt" class="btn btn-primary" disabled>
-                        📥 Exportar (.TXT)
-                    </button>
-                    <button id="btn-export-csv" class="btn btn-outline" disabled>
-                        📊 Exportar (.CSV)
-                    </button>
-                </div>
-            </div>
-
-            <div class="table-wrapper">
-                <table class="marks-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Frase / Conteúdo</th>
-                            <th>Tempo Inicial</th>
-                            <th>Tempo Final</th>
-                            <th>Duração</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="marks-table-body">
-                        <tr>
-                            <td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+  <main class="container">
+    <!-- Quadro 4x4 -->
+    <div class="quadro-grid" id="quadroGrid">
+      <div class="celula" id="celula-1">
+        <p class="frase-secundaria">Frase Secundária 1</p>
+      </div>
+      <div class="celula" id="celula-2">
+        <p class="frase-secundaria">Frase Secundária 2</p>
+      </div>
+      <div class="celula" id="celula-3">
+        <p class="frase-secundaria">Frase Secundária 3</p>
+      </div>
+      <div class="celula" id="celula-4">
+        <p class="frase-secundaria">Frase Secundária 4</p>
+      </div>
+      <div class="celula" id="celula-5">
+        <p class="frase-secundaria">Frase Secundária 5</p>
+      </div>
+      <div class="celula destaque" id="celula-destaque">
+        <p class="frase-destaque">ESTA É A FRASE EM DESTAQUE</p>
+      </div>
+      <div class="celula" id="celula-7">
+        <p class="frase-secundaria">Frase Secundária 7</p>
+      </div>
+      <div class="celula" id="celula-8">
+        <p class="frase-secundaria">Frase Secundária 8</p>
+      </div>
+      <div class="celula" id="celula-9">
+        <p class="frase-secundaria">Frase Secundária 9</p>
+      </div>
+      <div class="celula" id="celula-10">
+        <p class="frase-secundaria">Frase Secundária 10</p>
+      </div>
+      <div class="celula" id="celula-11">
+        <p class="frase-secundaria">Frase Secundária 11</p>
+      </div>
+      <div class="celula" id="celula-12">
+        <p class="frase-secundaria">Frase Secundária 12</p>
+      </div>
+      <div class="celula" id="celula-13">
+        <p class="frase-secundaria">Frase Secundária 13</p>
+      </div>
+      <div class="celula" id="celula-14">
+        <p class="frase-secundaria">Frase Secundária 14</p>
+      </div>
+      <div class="celula" id="celula-15">
+        <p class="frase-secundaria">Frase Secundária 15</p>
+      </div>
+      <div class="celula" id="celula-16">
+        <p class="frase-secundaria">Frase Secundária 16</p>
+      </div>
     </div>
 
-    <script src="js/script.js"></script>
+    <!-- Controles de Ação / Painel Interativo -->
+    <div class="controles">
+      <button id="btnDestacar" class="btn-destacar">Destacar (Pressione 'D')</button>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
