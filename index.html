@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sincronizador Áudio-Texto | Duolingo Style</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- Fontes do Google Fonts como fallback/padrão limpo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
+        <!-- Cabeçalho -->
         <header class="app-header">
             <div class="logo-container">
                 <span class="logo-icon">🎵</span>
@@ -19,6 +21,7 @@
             <p class="subtitle">Ferramenta Interativa de Sincronização e Marcação de Áudio</p>
         </header>
 
+        <!-- Seção de Upload -->
         <section class="upload-section">
             <div class="upload-card">
                 <div class="upload-icon">🎧</div>
@@ -41,6 +44,7 @@
             </div>
         </section>
 
+        <!-- Player de Áudio -->
         <section class="player-section">
             <div class="player-controls-main">
                 <button id="btn-play-pause" class="btn-play" disabled title="Play/Pause (Espaço)">
@@ -67,19 +71,24 @@
             </div>
         </section>
 
+        <!-- Container Central das Frases (Visual 4x4 - Fundo Preto) -->
         <section class="sync-section">
             <div class="container-frases" id="container-frases">
                 <div class="frase-slot slot-anterior" id="slot-prev">
-                    </div>
+                    <!-- Frase n-1 -->
+                </div>
                 
                 <div class="frase-slot slot-destaque" id="slot-curr">
+                    <!-- Frase n (Destaque Laranja com Texto Branco) -->
                     <div class="frase-content">🎵</div>
                 </div>
                 
                 <div class="frase-slot slot-posterior" id="slot-next">
-                    </div>
+                    <!-- Frase n+1 -->
+                </div>
             </div>
 
+            <!-- Meta & Atalhos -->
             <div class="sync-info">
                 <div class="status-badge" id="phrase-counter">Frase 0 de 0</div>
                 <div class="action-buttons">
@@ -101,6 +110,7 @@
             </div>
         </section>
 
+        <!-- Tabela de Temporização / Preview -->
         <section class="results-section">
             <div class="results-header">
                 <h2>📋 Marcações de Tempo</h2>
