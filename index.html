@@ -1,449 +1,87 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trésor - Sincronizador Duolingo Style</title>
-  <style>
-    /* ----------------------------------------------------
-       FONTS & PALETA DE CORES (SUAS VARIÁVEIS)
-    ---------------------------------------------------- */
-    @font-face {
-      font-family: 'Feather';
-      src: url('./fonts/Feather-Bold.ttf') format('truetype');
-      font-weight: bold;
-      font-style: normal;
-    }
-
-    @font-face {
-      font-family: 'Nunito';
-      src: url('./fonts/Nunito-Regular.ttf') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-    }
-
-    :root {
-      --rosa: #F2A7AD;
-      --laranja-escuro: #EF7211;
-      --azul-claro: #C2EDF2;
-      --amarelo: #F2A444;
-      --laranja-salmao: #F2B28D;
-      --vermelho: #D93636;
-
-      --laranja-dark: #C95C08;
-      --vermelho-dark: #B02626;
-      --azul-dark: #8EC2C9;
-      --green-correct: #48B832;
-      --green-correct-dark: #379425;
-      
-      --bg-app: #F7F7F7;
-      --text-dark: #4B4B4B;
-      --card-border: #E5E5E5;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Nunito', sans-serif;
-      background-color: var(--bg-app);
-      color: var(--text-dark);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    /* ----------------------------------------------------
-       CONTAINER PRINCIPAL (ESTILO DUOLINGO)
-    ---------------------------------------------------- */
-    .app-container {
-      width: 100%;
-      max-width: 600px;
-      background: #FFFFFF;
-      border: 2px solid var(--card-border);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 8px 0 var(--card-border);
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    header {
-      text-align: center;
-      border-bottom: 2px solid var(--card-border);
-      padding-bottom: 15px;
-    }
-
-    h1 {
-      font-family: 'Feather', sans-serif;
-      color: var(--laranja-escuro);
-      font-size: 28px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    p.subtitle {
-      color: #777;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-
-    /* ----------------------------------------------------
-       ÁREA DAS FRASES (LYRICS DISPLAY)
-    ---------------------------------------------------- */
-    .lyrics-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-height: 400px;
-      overflow-y: auto;
-      padding: 10px 5px;
-      scroll-behavior: smooth;
-    }
-
-    .phrase-card {
-      background: var(--azul-claro);
-      border: 2px solid var(--azul-dark);
-      border-bottom: 5px solid var(--azul-dark);
-      border-radius: 16px;
-      padding: 14px 20px;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-dark);
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    /* Frase ativa (em destaque) */
-    .phrase-card.active {
-      background: var(--green-correct);
-      border-color: var(--green-correct-dark);
-      border-bottom-color: var(--green-correct-dark);
-      color: #FFFFFF;
-      transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(72, 184, 50, 0.4);
-    }
-
-    /* ----------------------------------------------------
-       PAINEL DE CONTROLES & BOTÕES 3D
-    ---------------------------------------------------- */
-    .controls-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    audio {
-      width: 100%;
-      border-radius: 12px;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn {
-      flex: 1;
-      font-family: 'Feather', sans-serif;
-      font-size: 16px;
-      padding: 14px;
-      border: none;
-      border-radius: 16px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: filter 0.1s, transform 0.1s;
-      outline: none;
-    }
-
-    .btn-primary {
-      background-color: var(--green-correct);
-      color: #FFF;
-      border-bottom: 5px solid var(--green-correct-dark);
-    }
-
-    .btn-export {
-      background-color: var(--amarelo);
-      color: #FFF;
-      border-bottom: 5px solid var(--laranja-dark);
-    }
-
-    .btn:active {
-      transform: translateY(4px);
-      border-bottom-width: 1px;
-    }
-
-    .btn:disabled {
-      background-color: #CCC;
-      border-bottom-color: #AAA;
-      cursor: not-allowed;
-    }
-
-    /* Hidden Canvas para geração de vídeo */
-    #exportCanvas {
-      display: none;
-    }
-
-    /* Status de Exportação */
-    #statusText {
-      text-align: center;
-      font-weight: bold;
-      color: var(--laranja-escuro);
-      font-size: 14px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizador Áudio-Texto</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div class="app-container">
+        <header>
+            <h1>Sincronização Áudio-Texto</h1>
+        </header>
 
-  <div class="app-container">
-    <header>
-      <h1>Trésor - Munya</h1>
-      <p class="subtitle">Sincronização de Voz & Exportador MP4</p>
-    </header>
+        <section class="upload-section">
+            <div class="upload-card">
+                <label for="audio-input" class="btn btn-secondary">
+                    <span>🎵</span> Selecionar Áudio
+                </label>
+                <input type="file" id="audio-input" accept="audio/mp3, audio/wav" hidden>
+                <span id="audio-filename" class="file-status">Nenhum áudio selecionado</span>
+            </div>
 
-    <audio id="audioPlayer" src="trésor munya voz.mp3" controls></audio>
+            <div class="upload-card">
+                <label for="text-input" class="btn btn-secondary">
+                    <span>📄</span> Selecionar Texto (.txt)
+                </label>
+                <input type="file" id="text-input" accept=".txt" hidden>
+                <span id="text-filename" class="file-status">Nenhum texto selecionado</span>
+            </div>
+        </section>
 
-    <div class="lyrics-container" id="lyricsContainer"></div>
+        <section class="phrase-display">
+            <div id="prev-phrase" class="phrase phrase-secondary">Carregue os arquivos para começar</div>
+            <div id="current-phrase" class="phrase phrase-active">
+                <div class="phrase-card">Sincronizador de Áudio & Texto</div>
+            </div>
+            <div id="next-phrase" class="phrase phrase-secondary">Estilo Duolingo</div>
+        </section>
 
-    <div class="controls-container">
-      <div class="btn-group">
-        <button id="btnPlay" class="btn btn-primary">▶ Tocar / Pausar</button>
-        <button id="btnExport" class="btn btn-export">🎬 Exportar MP4</button>
-      </div>
-      <div id="statusText"></div>
+        <section class="marking-section">
+            <button id="mark-btn" class="btn btn-mark" disabled>
+                📍 Marcar Tempo (Enter / M)
+            </button>
+        </section>
+
+        <section class="controls-section">
+            <div class="progress-container">
+                <span id="current-time">00:00.000</span>
+                <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1" disabled>
+                <span id="total-time">00:00.000</span>
+            </div>
+
+            <div class="audio-controls">
+                <button id="play-btn" class="btn btn-primary" disabled>▶ Play</button>
+                <button id="stop-btn" class="btn btn-danger" disabled>⏹ Stop</button>
+                
+                <div class="control-group">
+                    <label for="volume-slider">🔊</label>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="speed-select">⚡</label>
+                    <select id="speed-select">
+                        <option value="0.5">0.5x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <footer class="action-footer">
+            <button id="export-btn" class="btn btn-success" disabled>
+                📥 Exportar Temporização (Ctrl+E)
+            </button>
+        </footer>
     </div>
-  </div>
 
-  <canvas id="exportCanvas" width="720" height="1280"></canvas>
-
-  <script>
-    /* ----------------------------------------------------
-       1. LETRA E TIMESTAMPS DE SINCRONIZAÇÃO (Ajuste aqui)
-    ---------------------------------------------------- */
-    // Ajuste o atributo 'time' com o tempo em segundos onde cada frase começa no áudio
-    const lyricsData = [
-      { text: "Quand je tourne les pages", time: 0.0 },
-      { text: "Quelques mots s’effacent", time: 2.5 },
-      { text: "Les larmes disparaissent", time: 5.0 },
-      { text: "Je fais mes bagages", time: 7.5 },
-
-      { text: "Je m’endors le soir", time: 10.5 },
-      { text: "Imaginant des trésors", time: 13.0 },
-      { text: "Enfuis juste ici", time: 15.5 },
-      { text: "Tout au fond du corridor", time: 18.0 },
-      
-      { text: "Je m’endors le soir", time: 21.0 },
-      { text: "Imaginant des trésors", time: 23.5 },
-      { text: "Enfuis juste ici", time: 26.0 },
-      { text: "Tout au fond du corridor", time: 28.5 },
-      
-      { text: "Je m’endors", time: 31.0 },
-      { text: "Imaginant des trésors", time: 33.0 },
-
-      { text: "Quand je tourne les pages", time: 36.0 },
-      { text: "Quelques mots s’effacent", time: 38.5 },
-      { text: "Les larmes disparaissent", time: 41.0 },
-      { text: "Je fais mes bagages", time: 43.5 },
-
-      { text: "Je m’endors le soir", time: 46.5 },
-      { text: "Imaginant des trésors", time: 49.0 },
-      { text: "Enfuis juste ici", time: 51.5 },
-      { text: "Tout au fond du corridor", time: 54.0 },
-      { text: "Ouh, ouh, ouh, ouh", time: 57.0 },
-
-      { text: "Quand je tourne les pages", time: 61.0 },
-      { text: "Quelques mots s’effacent", time: 63.5 },
-      { text: "Les larmes disparaissent", time: 66.0 },
-      { text: "Je fais mes bagages", time: 68.5 },
-      
-      { text: "Quand je tourne les pages", time: 71.0 },
-      { text: "Quelques mots s’effacent", time: 73.5 },
-      { text: "Les larmes disparaissent", time: 76.0 },
-      { text: "Je fais mes bagages", time: 78.5 }
-    ];
-
-    /* ----------------------------------------------------
-       2. CONSTRUÇÃO DA INTERFACE (DOM)
-    ---------------------------------------------------- */
-    const container = document.getElementById('lyricsContainer');
-    const audio = document.getElementById('audioPlayer');
-    const btnPlay = document.getElementById('btnPlay');
-    const btnExport = document.getElementById('btnExport');
-    const statusText = document.getElementById('statusText');
-
-    // Cria os cards de texto
-    lyricsData.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'phrase-card';
-      card.innerText = item.text;
-      card.dataset.index = index;
-      
-      // Clique na frase faz o áudio pular direto para ela
-      card.addEventListener('click', () => {
-        audio.currentTime = item.time;
-        audio.play();
-      });
-
-      container.appendChild(card);
-    });
-
-    const cards = document.querySelectorAll('.phrase-card');
-    let currentIndex = -1;
-
-    /* ----------------------------------------------------
-       3. ATUALIZAÇÃO DA SINCRONIZAÇÃO EM TEMPO REAL
-    ---------------------------------------------------- */
-    audio.addEventListener('timeupdate', () => {
-      const currentTime = audio.currentTime;
-      let activeIndex = -1;
-
-      // Descobre qual frase está tocando no momento
-      for (let i = 0; i < lyricsData.length; i++) {
-        if (currentTime >= lyricsData[i].time) {
-          activeIndex = i;
-        } else {
-          break;
-        }
-      }
-
-      if (activeIndex !== currentIndex) {
-        currentIndex = activeIndex;
-        
-        // Atualiza a classe CSS para destacar a frase ativa
-        cards.forEach((card, idx) => {
-          if (idx === currentIndex) {
-            card.classList.add('active');
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else {
-            card.classList.remove('active');
-          }
-        });
-      }
-    });
-
-    btnPlay.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    });
-
-    /* ----------------------------------------------------
-       4. EXPORTADOR DE VÍDEO MP4 (CANVAS + MEDIARECORDER)
-    ---------------------------------------------------- */
-    btnExport.addEventListener('click', async () => {
-      btnExport.disabled = true;
-      btnPlay.disabled = true;
-      statusText.innerText = "Gravando e gerando o vídeo MP4/WebM... Aguarde terminar a música!";
-
-      const canvas = document.getElementById('exportCanvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Captura áudio e vídeo do Canvas
-      const stream = canvas.captureStream(30);
-      
-      // Adiciona o canal de áudio ao stream do canvas
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioCtx.createMediaElementSource(audio);
-      const dest = audioCtx.createMediaStreamDestination();
-      source.connect(dest);
-      source.connect(audioCtx.destination); // Para continuar escutando enquanto grava
-
-      const combinedStream = new MediaStream([
-        ...stream.getVideoTracks(),
-        ...dest.stream.getAudioTracks()
-      ]);
-
-      // Tenta gravar em MP4 ou WebM
-      let options = { mimeType: 'video/mp4' };
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        options = { mimeType: 'video/webm' };
-      }
-
-      const recorder = new MediaRecorder(combinedStream, options);
-      const chunks = [];
-
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        const url = URL.createObjectURL(blob);
-        
-        // Link de Download
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Tresor_Munya_Karaoke.${options.mimeType.includes('mp4') ? 'mp4' : 'webm'}`;
-        a.click();
-
-        statusText.innerText = "Exportação concluída com sucesso!";
-        btnExport.disabled = false;
-        btnPlay.disabled = false;
-      };
-
-      // Reinicia o áudio para o início e começa a gravação
-      audio.currentTime = 0;
-      await audio.play();
-      recorder.start();
-
-      // Loop de renderização no Canvas (Formato Stories 9:16 - 720x1280)
-      function renderFrame() {
-        if (audio.paused || audio.ended) {
-          if (recorder.state === "recording") recorder.stop();
-          return;
-        }
-
-        // Fundo do Canvas
-        ctx.fillStyle = "#F7F7F7";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Header / Título
-        ctx.fillStyle = "#EF7211";
-        ctx.font = "bold 42px 'Feather', sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("TRÉSOR - MUNYA", canvas.width / 2, 100);
-
-        // Renderiza Frases no Canvas
-        const startY = 220;
-        const cardHeight = 80;
-        const gap = 20;
-
-        lyricsData.forEach((item, i) => {
-          const y = startY + (i - currentIndex) * (cardHeight + gap);
-
-          // Renderiza apenas as frases visíveis na tela
-          if (y > 100 && y < canvas.height - 100) {
-            const isActive = (i === currentIndex);
-
-            // Cor do Card
-            ctx.fillStyle = isActive ? "#48B832" : "#C2EDF2";
-            ctx.beginPath();
-            ctx.roundRect(60, y, canvas.width - 120, cardHeight, 16);
-            ctx.fill();
-
-            // Borda do Card (Estilo Duolingo)
-            ctx.strokeStyle = isActive ? "#379425" : "#8EC2C9";
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            // Texto da Frase
-            ctx.fillStyle = isActive ? "#FFFFFF" : "#4B4B4B";
-            ctx.font = "bold 26px 'Nunito', sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(item.text, canvas.width / 2, y + 48);
-          }
-        });
-
-        requestAnimationFrame(renderFrame);
-      }
-
-      renderFrame();
-    });
-  </script>
+    <audio id="audio-player"></audio>
+    <script src="js/script.js"></script>
 </body>
 </html>
