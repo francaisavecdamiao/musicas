@@ -71,7 +71,7 @@ audioInput.addEventListener('change', async (e) => {
     const arrayBuffer = await file.arrayBuffer();
     const ctx = getAudioContext();
     audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-    
+
     totalTimeEl.textContent = formatTime(audioBuffer.duration);
     btnPlayPause.disabled = false;
     pauseOffset = 0;
@@ -90,11 +90,11 @@ textInput.addEventListener('change', (e) => {
             .split('\n')
             .map(line => line.trim())
             .filter(line => line.length > 0);
-        
+
         phrases = ["🎵", ...lines];
         timestamps = phrases.map(() => ({ start: null, end: null }));
         timestamps[0] = { start: 0, end: 0 };
-        
+
         currentPhraseIndex = 0;
         btnNextPhrase.disabled = false;
         btnMarkTime.disabled = false;
@@ -174,7 +174,7 @@ progressContainer.addEventListener('click', (e) => {
     const clickX = e.clientX - rect.left;
     const pct = clickX / rect.width;
     pauseOffset = pct * audioBuffer.duration;
-    
+
     if (isPlaying) {
         audioSource.stop();
         playAudio();
@@ -212,13 +212,9 @@ function renderPhrases() {
         slotPrev.innerHTML = '';
     }
 
-    // Destaque Laranja com Texto Branco Forçado
+    // Destaque Laranja com Texto Branco Forçado + transição suave
     const currText = phrases[currentPhraseIndex];
-    if (currText === "🎵") {
-        slotCurr.innerHTML = '<div class="frase-content" style="color: #FFFFFF !important;">🎵</div>';
-    } else {
-        slotCurr.innerHTML = `<div class="frase-content" style="color: #FFFFFF !important;">${currText}</div>`;
-    }
+    updateCurrentSlot(currText);
 
     // Próxima
     if (currentPhraseIndex < total - 1) {
@@ -227,6 +223,36 @@ function renderPhrases() {
     } else {
         slotNext.innerHTML = '';
     }
+}
+
+// Atualiza o slot em destaque SEM recriar o elemento a cada troca de frase.
+// Recriar o <div> (via innerHTML) a cada chamada é o motivo do "piscar":
+// um elemento novo não tem estado anterior, então nenhuma transição CSS
+// consegue rodar - a troca sempre é instantânea (um "pop" seco).
+// Reaproveitando o mesmo elemento e só trocando o texto, a transição
+// definida no CSS (transform + opacity) passa a funcionar de verdade.
+function updateCurrentSlot(text) {
+    let contentEl = slotCurr.querySelector('.frase-content');
+
+    if (!contentEl) {
+        contentEl = document.createElement('div');
+        contentEl.className = 'frase-content';
+        slotCurr.innerHTML = '';
+        slotCurr.appendChild(contentEl);
+    }
+
+    contentEl.textContent = text;
+
+    // Reinicia a animação de entrada: tira a classe, força um reflow
+    // (void contentEl.offsetWidth) e recoloca, para o navegador "sentir"
+    // que o estado mudou e disparar a transição do zero a cada frase.
+    contentEl.classList.remove('is-entering');
+    void contentEl.offsetWidth;
+    contentEl.classList.add('is-entering');
+
+    requestAnimationFrame(() => {
+        contentEl.classList.remove('is-entering');
+    });
 }
 
 // Navegação entre Frases + Marcação Automática
@@ -247,16 +273,16 @@ function prevPhrase() {
     }
 }
 
-// Marcação de Tempo Sem Animações Visualmente Perturbadoras
+// Marcação de Tempo
 function markTimestamp() {
     if (currentPhraseIndex === 0) return;
 
     const now = getCurrentAudioTime();
-    
+
     if (!timestamps[currentPhraseIndex]) {
         timestamps[currentPhraseIndex] = { start: null, end: null };
     }
-    
+
     timestamps[currentPhraseIndex].start = now;
 
     if (currentPhraseIndex > 1 && timestamps[currentPhraseIndex - 1].start !== null) {
@@ -281,7 +307,7 @@ function renderTable() {
 
         const startStr = ts.start !== null ? formatTime(ts.start) : '--:--.---';
         const endStr = ts.end !== null ? formatTime(ts.end) : '--:--.---';
-        
+
         let durationStr = '--:--.---';
         if (ts.start !== null && ts.end !== null && ts.end >= ts.start) {
             durationStr = formatTime(ts.end - ts.start);
@@ -316,7 +342,7 @@ function clearMark(index) {
 function highlightActiveRow() {
     const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
     const tableWrapper = document.querySelector('.table-wrapper');
-    
+
     if (activeRow && tableWrapper) {
         const rowTop = activeRow.offsetTop;
         const rowHeight = activeRow.offsetHeight;
@@ -384,7 +410,7 @@ function downloadFile(content, filename, type) {
 
 // Intercepta e Bloqueia Ações Padrão de Rolagem na Janela Principal
 window.addEventListener('keydown', (e) => {
-    if (['Space', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.code) && 
+    if (['Space', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.code) &&
         !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         e.preventDefault();
     }
@@ -398,15 +424,15 @@ document.addEventListener('keydown', (e) => {
     if (['n', 'N', 'Enter', 'ArrowRight'].includes(e.key) || e.code === 'Space') {
         e.preventDefault();
         nextPhrase();
-    } 
+    }
     else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         prevPhrase();
-    } 
+    }
     else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         markTimestamp();
-    } 
+    }
     else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
         e.preventDefault();
         exportData('txt');
