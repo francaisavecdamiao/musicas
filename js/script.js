@@ -1,224 +1,404 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Elementos do DOM
-    const audioInput = document.getElementById('audio-input');
-    const textInput = document.getElementById('text-input');
-    const audioFilename = document.getElementById('audio-filename');
-    const textFilename = document.getElementById('text-filename');
-    const audioPlayer = document.getElementById('audio-player');
+// State Management
+let audioFile = null;
+let audioBuffer = null;
+let audioContext = null;
+let audioSource = null;
+let isPlaying = false;
+let startTime = 0;
+let pauseOffset = 0;
+let playbackRate = 1.0;
+let volume = 1.0;
+
+let phrases = ["🎵"]; // Index 0 is music emoji
+let currentPhraseIndex = 0;
+let timestamps = [{ start: 0, end: 0 }]; // F0 initial mark
+
+// DOM Elements
+const audioInput = document.getElementById('audio-input');
+const textInput = document.getElementById('text-input');
+const audioFileName = document.getElementById('audio-file-name');
+const textFileName = document.getElementById('text-file-name');
+
+const btnPlayPause = document.getElementById('btn-play-pause');
+const playIcon = document.getElementById('play-icon');
+const currentTimeEl = document.getElementById('current-time');
+const totalTimeEl = document.getElementById('total-time');
+const progressBar = document.getElementById('progress-bar');
+const progressContainer = document.getElementById('progress-container');
+
+const volumeControl = document.getElementById('volume-control');
+const speedControl = document.getElementById('speed-control');
+const speedVal = document.getElementById('speed-val');
+
+const slotPrev = document.getElementById('slot-prev');
+const slotCurr = document.getElementById('slot-curr');
+const slotNext = document.getElementById('slot-next');
+const containerFrases = document.getElementById('container-frases');
+const phraseCounter = document.getElementById('phrase-counter');
+
+const btnMarkTime = document.getElementById('btn-mark-time');
+const btnExportTxt = document.getElementById('btn-export-txt');
+const btnExportCsv = document.getElementById('btn-export-csv');
+const tableBody = document.getElementById('marks-table-body');
+
+// Audio Context Init
+function getAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
+
+// Utility: Format Seconds to MM:SS.mmm
+function formatTime(sec) {
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    const ms = Math.floor((sec % 1) * 1000);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+}
+
+// Upload Audio
+audioInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    audioFile = file;
+    audioFileName.textContent = file.name;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const ctx = getAudioContext();
+    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
     
-    const prevPhraseEl = document.getElementById('prev-phrase');
-    const currentPhraseEl = document.getElementById('current-phrase');
-    const nextPhraseEl = document.getElementById('next-phrase');
+    totalTimeEl.textContent = formatTime(audioBuffer.duration);
+    btnPlayPause.disabled = false;
+    pauseOffset = 0;
+    updateProgressUI();
+});
 
-    const playBtn = document.getElementById('play-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const markBtn = document.getElementById('mark-btn');
-    const exportBtn = document.getElementById('export-btn');
-    const progressBar = document.getElementById('progress-bar');
-    const volumeSlider = document.getElementById('volume-slider');
-    const speedSelect = document.getElementById('speed-select');
-    const currentTimeEl = document.getElementById('current-time');
-    const totalTimeEl = document.getElementById('total-time');
+// Upload Text
+textInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    textFileName.textContent = file.name;
 
-    // Estado da Aplicação
-    let phrases = [];
-    let currentIndex = 0;
-    let timestamps = []; // Guarda os objetos { text, start, end }
-    let audioFileName = '';
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const lines = evt.target.result
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        
+        phrases = ["🎵", ...lines];
+        timestamps = phrases.map(() => ({ start: null, end: null }));
+        timestamps[0] = { start: 0, end: 0 }; // Marker for F0
+        
+        currentPhraseIndex = 0;
+        btnMarkTime.disabled = false;
+        btnExportTxt.disabled = false;
+        btnExportCsv.disabled = false;
 
-    // --- CARREGAMENTO DE ARQUIVOS ---
+        renderPhrases();
+        renderTable();
+    };
+    reader.readAsText(file);
+});
 
-    audioInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            audioFileName = file.name;
-            audioFilename.textContent = file.name;
-            const url = URL.createObjectURL(file);
-            audioPlayer.src = url;
-            playBtn.disabled = false;
-            stopBtn.disabled = false;
-            progressBar.disabled = false;
+// Playback Logic
+function playAudio() {
+    if (!audioBuffer) return;
+    const ctx = getAudioContext();
+
+    audioSource = ctx.createBufferSource();
+    audioSource.buffer = audioBuffer;
+    audioSource.playbackRate.value = playbackRate;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = volume;
+
+    audioSource.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    startTime = ctx.currentTime - (pauseOffset / playbackRate);
+    audioSource.start(0, pauseOffset);
+    isPlaying = true;
+
+    playIcon.textContent = '⏸';
+    requestAnimationFrame(updatePlaybackProgress);
+
+    audioSource.onended = () => {
+        if (getCurrentAudioTime() >= audioBuffer.duration) {
+            isPlaying = false;
+            playIcon.textContent = '▶';
+            pauseOffset = 0;
         }
-    });
+    };
+}
 
-    textInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            textFilename.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const lines = evt.target.result.split(/\r?\n/);
-                phrases = lines.map(line => line.trim()).filter(line => line.length > 0);
-                currentIndex = 0;
-                timestamps = new Array(phrases.length).fill(null);
-                updatePhraseDisplay();
-                checkReadyToExport();
-                if (audioPlayer.src) markBtn.disabled = false;
-            };
-            reader.readAsText(file);
-        }
-    });
+function pauseAudio() {
+    if (!audioSource || !isPlaying) return;
+    pauseOffset = getCurrentAudioTime();
+    audioSource.stop();
+    isPlaying = false;
+    playIcon.textContent = '▶';
+}
 
-    // --- CONTROLES DE ÁUDIO ---
+function getCurrentAudioTime() {
+    if (!isPlaying) return pauseOffset;
+    const ctx = getAudioContext();
+    const elapsed = (ctx.currentTime - startTime) * playbackRate;
+    return Math.min(elapsed, audioBuffer ? audioBuffer.duration : 0);
+}
 
-    audioPlayer.addEventListener('loadedmetadata', () => {
-        totalTimeEl.textContent = formatTime(audioPlayer.duration);
-        progressBar.max = audioPlayer.duration;
-    });
+function updatePlaybackProgress() {
+    if (!isPlaying) return;
+    const curr = getCurrentAudioTime();
+    currentTimeEl.textContent = formatTime(curr);
+    updateProgressUI();
+    requestAnimationFrame(updatePlaybackProgress);
+}
 
-    audioPlayer.addEventListener('timeupdate', () => {
-        if (!progressBar.matches(':active')) {
-            progressBar.value = audioPlayer.currentTime;
-        }
-        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-        autoSyncCheck(audioPlayer.currentTime);
-    });
+function updateProgressUI() {
+    if (!audioBuffer) return;
+    const pct = (getCurrentAudioTime() / audioBuffer.duration) * 100;
+    progressBar.style.width = `${pct}%`;
+}
 
-    playBtn.addEventListener('click', () => {
-        if (audioPlayer.paused) {
-            audioPlayer.play();
-            playBtn.textContent = '⏸ Pause';
-        } else {
-            audioPlayer.pause();
-            playBtn.textContent = '▶ Play';
-        }
-    });
+// Seek on Progress Bar
+progressContainer.addEventListener('click', (e) => {
+    if (!audioBuffer) return;
+    const rect = progressContainer.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = clickX / rect.width;
+    pauseOffset = pct * audioBuffer.duration;
+    
+    if (isPlaying) {
+        audioSource.stop();
+        playAudio();
+    } else {
+        currentTimeEl.textContent = formatTime(pauseOffset);
+        updateProgressUI();
+    }
+});
 
-    stopBtn.addEventListener('click', () => {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        playBtn.textContent = '▶ Play';
-    });
+btnPlayPause.addEventListener('click', () => {
+    if (isPlaying) pauseAudio();
+    else playAudio();
+});
 
-    progressBar.addEventListener('input', () => {
-        audioPlayer.currentTime = progressBar.value;
-    });
+// Controls
+volumeControl.addEventListener('input', (e) => {
+    volume = parseFloat(e.target.value);
+});
 
-    volumeSlider.addEventListener('input', (e) => {
-        audioPlayer.volume = e.target.value;
-    });
+speedControl.addEventListener('input', (e) => {
+    playbackRate = parseFloat(e.target.value);
+    speedVal.textContent = `${playbackRate.toFixed(1)}x`;
+});
 
-    speedSelect.addEventListener('change', (e) => {
-        audioPlayer.playbackRate = parseFloat(e.target.value);
-    });
+// Render Phrase Container (3 Slots)
+function renderPhrases() {
+    const total = phrases.length;
+    phraseCounter.textContent = `Frase ${currentPhraseIndex} de ${total - 1}`;
 
-    // --- LÓGICA DE SINCRONIZAÇÃO E MARCAÇÃO ---
-
-    function updatePhraseDisplay() {
-        if (phrases.length === 0) return;
-
-        prevPhraseEl.textContent = currentIndex > 0 ? phrases[currentIndex - 1] : '';
-        currentPhraseEl.innerHTML = `<div class="phrase-card">${phrases[currentIndex]}</div>`;
-        nextPhraseEl.textContent = currentIndex < phrases.length - 1 ? phrases[currentIndex + 1] : '';
+    // Prev
+    if (currentPhraseIndex > 0) {
+        const prevText = phrases[currentPhraseIndex - 1];
+        slotPrev.innerHTML = prevText === "🎵" ? '<span class="frase-musica">🎵</span>' : prevText;
+    } else {
+        slotPrev.innerHTML = '';
     }
 
-    function markCurrentTimestamp() {
-        if (phrases.length === 0) return;
-
-        const currentTime = audioPlayer.currentTime;
-
-        // Se a frase anterior existir e ainda não tiver um 'end', fecha ela
-        if (currentIndex > 0 && timestamps[currentIndex - 1]) {
-            timestamps[currentIndex - 1].end = currentTime;
-        }
-
-        // Define a marcação da frase atual
-        timestamps[currentIndex] = {
-            text: phrases[currentIndex],
-            start: currentTime,
-            end: null
-        };
-
-        // Avança para a próxima frase se disponível
-        if (currentIndex < phrases.length - 1) {
-            currentIndex++;
-            updatePhraseDisplay();
-        } else {
-            // Última frase fecha no fim do áudio ou tempo atual
-            timestamps[currentIndex].end = audioPlayer.duration || currentTime;
-        }
-
-        checkReadyToExport();
+    // Curr (Destaque)
+    const currText = phrases[currentPhraseIndex];
+    if (currText === "🎵") {
+        slotCurr.innerHTML = '<div class="frase-content frase-musica">🎵</div>';
+    } else {
+        slotCurr.innerHTML = `<div class="frase-content">${currText}</div>`;
     }
 
-    function autoSyncCheck(currentTime) {
-        // Modo Leitura: Se os timestamps já foram mapeados, avança o texto automaticamente durante o play
-        if (timestamps.length > 0 && timestamps[0] !== null) {
-            const foundIndex = timestamps.findIndex(ts => ts && ts.start <= currentTime && (ts.end === null || ts.end >= currentTime));
-            if (foundIndex !== -1 && foundIndex !== currentIndex) {
-                currentIndex = foundIndex;
-                updatePhraseDisplay();
-            }
-        }
+    // Next
+    if (currentPhraseIndex < total - 1) {
+        const nextText = phrases[currentPhraseIndex + 1];
+        slotNext.innerHTML = nextText === "🎵" ? '<span class="frase-musica">🎵</span>' : nextText;
+    } else {
+        slotNext.innerHTML = '';
+    }
+}
+
+// Navigation Functions
+function nextPhrase() {
+    if (currentPhraseIndex < phrases.length - 1) {
+        currentPhraseIndex++;
+        renderPhrases();
+        highlightActiveRow();
+    }
+}
+
+function prevPhrase() {
+    if (currentPhraseIndex > 0) {
+        currentPhraseIndex--;
+        renderPhrases();
+        highlightActiveRow();
+    }
+}
+
+// Timestamp Marking
+function markTimestamp() {
+    if (currentPhraseIndex === 0) return; // F0 is fixed at 00:00
+
+    const now = getCurrentAudioTime();
+    
+    // Set end of previous, start of current
+    if (!timestamps[currentPhraseIndex]) {
+        timestamps[currentPhraseIndex] = { start: null, end: null };
+    }
+    
+    // Set current phrase start
+    timestamps[currentPhraseIndex].start = now;
+
+    // Auto-close previous phrase end if not set
+    if (currentPhraseIndex > 1 && timestamps[currentPhraseIndex - 1].start !== null) {
+        timestamps[currentPhraseIndex - 1].end = now;
     }
 
-    markBtn.addEventListener('click', markCurrentTimestamp);
+    // Trigger visual feedback
+    containerFrases.classList.add('flash-success');
+    setTimeout(() => containerFrases.classList.remove('flash-success'), 400);
 
-    // --- ATALHOS DE TECLADO ---
+    renderTable();
+}
 
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && e.target.tagName !== 'BUTTON') {
-            e.preventDefault();
-            playBtn.click();
-        } else if (e.code === 'ArrowRight') {
-            if (currentIndex < phrases.length - 1) {
-                currentIndex++;
-                updatePhraseDisplay();
-            }
-        } else if (e.code === 'ArrowLeft') {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updatePhraseDisplay();
-            }
-        } else if (e.code === 'Enter' || e.code === 'KeyM') {
-            if (!markBtn.disabled) markCurrentTimestamp();
-        } else if (e.ctrlKey && e.code === 'KeyE') {
-            e.preventDefault();
-            if (!exportBtn.disabled) exportData();
-        }
-    });
-
-    // --- EXPORTAÇÃO ---
-
-    function checkReadyToExport() {
-        const hasSomeTimestamp = timestamps.some(ts => ts !== null);
-        exportBtn.disabled = !hasSomeTimestamp;
+// Render Table
+function renderTable() {
+    if (phrases.length <= 1) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td></tr>';
+        return;
     }
 
-    function exportData() {
-        const now = new Date();
-        const dateStr = now.toISOString().replace('T', ' ').substring(0, 19);
+    let html = '';
+    for (let i = 0; i < phrases.length; i++) {
+        const phrase = phrases[i];
+        const ts = timestamps[i] || { start: null, end: null };
+        const isF0 = i === 0;
 
-        let content = `# Temporização - Áudio: ${audioFileName || 'desconhecido'}\n`;
-        content += `# Gerado em: ${dateStr}\n`;
-        content += `# Total de frases: ${phrases.length}\n\n`;
+        const startStr = ts.start !== null ? formatTime(ts.start) : '--:--.---';
+        const endStr = ts.end !== null ? formatTime(ts.end) : '--:--.---';
+        
+        let durationStr = '--:--.---';
+        if (ts.start !== null && ts.end !== null && ts.end >= ts.start) {
+            durationStr = formatTime(ts.end - ts.start);
+        }
 
-        timestamps.forEach((ts, idx) => {
-            if (ts) {
-                const startStr = formatTime(ts.start);
-                const endStr = ts.end ? formatTime(ts.end) : formatTime(ts.start + 2.0);
-                content += `FRASE ${idx + 1}: "${ts.text}" - ${startStr} -> ${endStr}\n`;
+        const activeClass = i === currentPhraseIndex ? 'style="background-color: #FFF3E0; font-weight: bold;"' : '';
+
+        html += `
+            <tr ${activeClass} id="row-phrase-${i}">
+                <td>F${i}</td>
+                <td>${phrase}</td>
+                <td><span class="badge-time">${startStr}</span></td>
+                <td><span class="badge-time">${endStr}</span></td>
+                <td>${durationStr}</td>
+                <td>
+                    ${!isF0 ? `<button class="btn-del" onclick="clearMark(${i})">✕</button>` : ''}
+                </td>
+            </tr>
+        `;
+    }
+    tableBody.innerHTML = html;
+}
+
+function clearMark(index) {
+    if (timestamps[index]) {
+        timestamps[index] = { start: null, end: null };
+        renderTable();
+    }
+}
+
+function highlightActiveRow() {
+    const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
+    if (activeRow) {
+        activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    renderTable();
+}
+
+// Export Handling
+btnExportTxt.addEventListener('click', () => exportData('txt'));
+btnExportCsv.addEventListener('click', () => exportData('csv'));
+
+function exportData(format) {
+    const audioName = audioFile ? audioFile.name : 'audio.mp3';
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    if (format === 'txt') {
+        let content = `# Temporização - Áudio: ${audioName}\n`;
+        content += `# Gerado em: ${nowStr}\n`;
+        content += `# Total de frases: ${phrases.length - 1}\n`;
+        content += `# Tecla C para avançar, M para marcar tempo\n\n`;
+
+        phrases.forEach((phrase, i) => {
+            const ts = timestamps[i] || { start: null, end: null };
+            if (i === 0) {
+                content += `FRASE 0: 🎵 - 00:00.000 (início)\n`;
+            } else {
+                const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
+                const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
+                const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
+                content += `FRASE ${i}: "${phrase}"\n`;
+                content += `  Início: ${s}\n`;
+                content += `  Fim: ${e}\n`;
+                content += `  Duração: ${dur}\n\n`;
             }
         });
 
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `temporizacao_${Date.now()}.txt`;
-        link.click();
+        downloadFile(content, 'sincronizacao_audio.txt', 'text/plain');
+    } else if (format === 'csv') {
+        let content = `ID,Frase,Inicio,Fim,Duracao\n`;
+        phrases.forEach((phrase, i) => {
+            const ts = timestamps[i] || { start: null, end: null };
+            const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
+            const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
+            const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
+            content += `${i},"${phrase.replace(/"/g, '""')}",${s},${e},${dur}\n`;
+        });
+
+        downloadFile(content, 'sincronizacao_audio.csv', 'text/csv');
     }
+}
 
-    exportBtn.addEventListener('click', exportData);
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: `${type};charset=utf-8;` });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
 
-    // --- AUXILIARES ---
+// Keyboard Controls
+document.addEventListener('keydown', (e) => {
+    // Ignore keypresses if typing in input elements
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    function formatTime(seconds) {
-        if (isNaN(seconds)) return '00:00.000';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        const ms = Math.floor((seconds % 1) * 1000);
-
-        const pad = (num, size = 2) => String(num).padStart(size, '0');
-        return `${pad(mins)}:${pad(secs)}.${pad(ms, 3)}`;
+    if (e.key === 'c' || e.key === 'C' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextPhrase();
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevPhrase();
+    } else if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) pauseAudio();
+        else playAudio();
+    } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        markTimestamp();
+    } else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
+        e.preventDefault();
+        exportData('txt');
     }
 });
+
+btnMarkTime.addEventListener('click', markTimestamp);
