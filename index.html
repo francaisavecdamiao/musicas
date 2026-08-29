@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sincronizador Áudio-Texto | Duolingo Style</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Fontes do Google Fonts como fallback/padrão limpo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -71,7 +70,7 @@
             </div>
         </section>
 
-        <!-- Container Central das Frases (Visual 4x4 - Fundo Preto) -->
+        <!-- Container Central das Frases -->
         <section class="sync-section">
             <div class="container-frases" id="container-frases">
                 <div class="frase-slot slot-anterior" id="slot-prev">
@@ -89,24 +88,27 @@
             </div>
 
             <!-- Meta & Atalhos -->
-<div class="sync-info">
-    <div class="status-badge" id="phrase-counter">Frase 0 de 0</div>
-    <div class="action-buttons">
-        <button id="btn-next-phrase" class="btn btn-action" disabled>
-            ⚡ Destacar & Marcar (N / Enter)
-        </button>
-    </div>
-</div>
+            <div class="sync-info">
+                <div class="status-badge" id="phrase-counter">Frase 0 de 0</div>
+                <div class="action-buttons">
+                    <button id="btn-next-phrase" class="btn btn-action" disabled>
+                        ⚡ Destacar & Marcar (N / Enter)
+                    </button>
+                    <button id="btn-mark-time" class="btn btn-secondary" disabled>
+                        📍 Remarcar Tempo (M)
+                    </button>
+                </div>
+            </div>
 
-<div class="shortcuts-bar">
-    <div class="shortcut-tag"><kbd>N</kbd> / <kbd>Enter</kbd> / <kbd>→</kbd> Avançar + Marcar Tempo</div>
-    <div class="shortcut-tag"><kbd>←</kbd> Voltar Frase</div>
-    <div class="shortcut-tag"><kbd>M</kbd> Remarcar Tempo Atual</div>
-    <div class="shortcut-tag"><kbd>Ctrl</kbd>+<kbd>E</kbd> Exportar</div>
-</div>
+            <div class="shortcuts-bar">
+                <div class="shortcut-tag"><kbd>N</kbd> / <kbd>Enter</kbd> / <kbd>→</kbd> Avançar + Marcar Tempo</div>
+                <div class="shortcut-tag"><kbd>←</kbd> Voltar Frase</div>
+                <div class="shortcut-tag"><kbd>M</kbd> Remarcar Tempo Atual</div>
+                <div class="shortcut-tag"><kbd>Ctrl</kbd>+<kbd>E</kbd> Exportar</div>
+            </div>
         </section>
 
-        <!-- Tabela de Temporização / Preview -->
+        <!-- Tabela de Temporização -->
         <section class="results-section">
             <div class="results-header">
                 <h2>📋 Marcações de Tempo</h2>
