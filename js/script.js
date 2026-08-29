@@ -1,404 +1,194 @@
-// State Management
-let audioFile = null;
-let audioBuffer = null;
-let audioContext = null;
-let audioSource = null;
-let isPlaying = false;
-let startTime = 0;
-let pauseOffset = 0;
-let playbackRate = 1.0;
-let volume = 1.0;
+// Variáveis principais
+let audio = null;
+let frases = ['🎵'];
+let indiceAtual = 0;
 
-let phrases = ["🎵"]; // Index 0 is music emoji
-let currentPhraseIndex = 0;
-let timestamps = [{ start: 0, end: 0 }]; // F0 initial mark
+// Elementos DOM
+const audioInput = document.getElementById('audioFile');
+const textInput = document.getElementById('textFile');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const speedControl = document.getElementById('speedControl');
+const volumeControl = document.getElementById('volumeControl');
+const speedValue = document.getElementById('speedValue');
+const progressFill = document.getElementById('progressFill');
+const fraseDestaque = document.getElementById('fraseDestaque');
+const fraseAnterior = document.getElementById('fraseAnterior');
+const frasePosterior = document.getElementById('frasePosterior');
+const contador = document.getElementById('contador');
+const destacarBtn = document.getElementById('destacarBtn');
+const audioName = document.getElementById('audioName');
 
-// DOM Elements
-const audioInput = document.getElementById('audio-input');
-const textInput = document.getElementById('text-input');
-const audioFileName = document.getElementById('audio-file-name');
-const textFileName = document.getElementById('text-file-name');
-
-const btnPlayPause = document.getElementById('btn-play-pause');
-const playIcon = document.getElementById('play-icon');
-const currentTimeEl = document.getElementById('current-time');
-const totalTimeEl = document.getElementById('total-time');
-const progressBar = document.getElementById('progress-bar');
-const progressContainer = document.getElementById('progress-container');
-
-const volumeControl = document.getElementById('volume-control');
-const speedControl = document.getElementById('speed-control');
-const speedVal = document.getElementById('speed-val');
-
-const slotPrev = document.getElementById('slot-prev');
-const slotCurr = document.getElementById('slot-curr');
-const slotNext = document.getElementById('slot-next');
-const containerFrases = document.getElementById('container-frases');
-const phraseCounter = document.getElementById('phrase-counter');
-
-const btnMarkTime = document.getElementById('btn-mark-time');
-const btnExportTxt = document.getElementById('btn-export-txt');
-const btnExportCsv = document.getElementById('btn-export-csv');
-const tableBody = document.getElementById('marks-table-body');
-
-// Audio Context Init
-function getAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
-    }
-    return audioContext;
-}
-
-// Utility: Format Seconds to MM:SS.mmm
-function formatTime(sec) {
-    if (isNaN(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    const ms = Math.floor((sec % 1) * 1000);
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
-}
-
-// Upload Audio
-audioInput.addEventListener('change', async (e) => {
+// Carregar áudio
+audioInput.addEventListener('change', function (e) {
     const file = e.target.files[0];
-    if (!file) return;
-    audioFile = file;
-    audioFileName.textContent = file.name;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const ctx = getAudioContext();
-    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-    
-    totalTimeEl.textContent = formatTime(audioBuffer.duration);
-    btnPlayPause.disabled = false;
-    pauseOffset = 0;
-    updateProgressUI();
+    if (file) {
+        if (audio) {
+            audio.pause();
+            URL.revokeObjectURL(audio.src);
+        }
+        const url = URL.createObjectURL(file);
+        audio = new Audio(url);
+        audioName.textContent = file.name;
+        configurarAudio();
+        playBtn.textContent = '▶ Play';
+        progressFill.style.width = '0%';
+    }
 });
 
-// Upload Text
-textInput.addEventListener('change', (e) => {
+// Carregar texto
+textInput.addEventListener('change', function (e) {
     const file = e.target.files[0];
-    if (!file) return;
-    textFileName.textContent = file.name;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-        const lines = evt.target.result
-            .split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-        
-        phrases = ["🎵", ...lines];
-        timestamps = phrases.map(() => ({ start: null, end: null }));
-        timestamps[0] = { start: 0, end: 0 }; // Marker for F0
-        
-        currentPhraseIndex = 0;
-        btnMarkTime.disabled = false;
-        btnExportTxt.disabled = false;
-        btnExportCsv.disabled = false;
-
-        renderPhrases();
-        renderTable();
-    };
-    reader.readAsText(file);
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const text = event.target.result;
+            const linhas = text.split(/\r?\n/).filter(line => line.trim() !== '');
+            frases = ['🎵', ...linhas];
+            indiceAtual = 0;
+            atualizarDisplay();
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
 });
 
-// Playback Logic
-function playAudio() {
-    if (!audioBuffer) return;
-    const ctx = getAudioContext();
+// Configurar áudio
+function configurarAudio() {
+    if (!audio) return;
 
-    audioSource = ctx.createBufferSource();
-    audioSource.buffer = audioBuffer;
-    audioSource.playbackRate.value = playbackRate;
+    audio.playbackRate = parseFloat(speedControl.value);
+    audio.volume = parseFloat(volumeControl.value);
 
-    const gainNode = ctx.createGain();
-    gainNode.gain.value = volume;
-
-    audioSource.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    startTime = ctx.currentTime - (pauseOffset / playbackRate);
-    audioSource.start(0, pauseOffset);
-    isPlaying = true;
-
-    playIcon.textContent = '⏸';
-    requestAnimationFrame(updatePlaybackProgress);
-
-    audioSource.onended = () => {
-        if (getCurrentAudioTime() >= audioBuffer.duration) {
-            isPlaying = false;
-            playIcon.textContent = '▶';
-            pauseOffset = 0;
+    audio.addEventListener('timeupdate', function () {
+        if (audio.duration) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = progress + '%';
         }
-    };
+    });
+
+    audio.addEventListener('ended', function () {
+        playBtn.textContent = '▶ Play';
+        progressFill.style.width = '0%';
+    });
 }
 
-function pauseAudio() {
-    if (!audioSource || !isPlaying) return;
-    pauseOffset = getCurrentAudioTime();
-    audioSource.stop();
-    isPlaying = false;
-    playIcon.textContent = '▶';
-}
+// Atualizar display das frases
+function atualizarDisplay() {
+    const total = Math.max(frases.length - 1, 0);
 
-function getCurrentAudioTime() {
-    if (!isPlaying) return pauseOffset;
-    const ctx = getAudioContext();
-    const elapsed = (ctx.currentTime - startTime) * playbackRate;
-    return Math.min(elapsed, audioBuffer ? audioBuffer.duration : 0);
-}
+    // Frase em destaque
+    fraseDestaque.textContent = frases[indiceAtual] || '🎵';
+    fraseDestaque.classList.remove('fade-in');
+    void fraseDestaque.offsetWidth; // force reflow
+    fraseDestaque.classList.add('fade-in');
 
-function updatePlaybackProgress() {
-    if (!isPlaying) return;
-    const curr = getCurrentAudioTime();
-    currentTimeEl.textContent = formatTime(curr);
-    updateProgressUI();
-    requestAnimationFrame(updatePlaybackProgress);
-}
-
-function updateProgressUI() {
-    if (!audioBuffer) return;
-    const pct = (getCurrentAudioTime() / audioBuffer.duration) * 100;
-    progressBar.style.width = `${pct}%`;
-}
-
-// Seek on Progress Bar
-progressContainer.addEventListener('click', (e) => {
-    if (!audioBuffer) return;
-    const rect = progressContainer.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const pct = clickX / rect.width;
-    pauseOffset = pct * audioBuffer.duration;
-    
-    if (isPlaying) {
-        audioSource.stop();
-        playAudio();
+    // Frase anterior
+    if (indiceAtual > 0) {
+        fraseAnterior.textContent = frases[indiceAtual - 1];
+        fraseAnterior.style.display = 'block';
     } else {
-        currentTimeEl.textContent = formatTime(pauseOffset);
-        updateProgressUI();
+        fraseAnterior.textContent = '';
+        fraseAnterior.style.display = 'none';
     }
-});
 
-btnPlayPause.addEventListener('click', () => {
-    if (isPlaying) pauseAudio();
-    else playAudio();
-});
-
-// Controls
-volumeControl.addEventListener('input', (e) => {
-    volume = parseFloat(e.target.value);
-});
-
-speedControl.addEventListener('input', (e) => {
-    playbackRate = parseFloat(e.target.value);
-    speedVal.textContent = `${playbackRate.toFixed(1)}x`;
-});
-
-// Render Phrase Container (3 Slots)
-function renderPhrases() {
-    const total = phrases.length;
-    phraseCounter.textContent = `Frase ${currentPhraseIndex} de ${total - 1}`;
-
-    // Prev
-    if (currentPhraseIndex > 0) {
-        const prevText = phrases[currentPhraseIndex - 1];
-        slotPrev.innerHTML = prevText === "🎵" ? '<span class="frase-musica">🎵</span>' : prevText;
+    // Frase posterior
+    if (indiceAtual < frases.length - 1) {
+        frasePosterior.textContent = frases[indiceAtual + 1];
+        frasePosterior.style.display = 'block';
     } else {
-        slotPrev.innerHTML = '';
+        frasePosterior.textContent = '';
+        frasePosterior.style.display = 'none';
     }
 
-    // Curr (Destaque)
-    const currText = phrases[currentPhraseIndex];
-    if (currText === "🎵") {
-        slotCurr.innerHTML = '<div class="frase-content frase-musica">🎵</div>';
+    // Contador
+    contador.textContent = `Frase ${indiceAtual} de ${total}`;
+}
+
+// Avançar (tecla D e botão DESTACAR)
+function avancar() {
+    if (indiceAtual < frases.length - 1) {
+        indiceAtual++;
+        atualizarDisplay();
+    }
+}
+
+// Voltar (tecla ←)
+function voltar() {
+    if (indiceAtual > 0) {
+        indiceAtual--;
+        atualizarDisplay();
+    }
+}
+
+// Play / Pause
+function togglePlay() {
+    if (!audio) return;
+
+    if (audio.paused) {
+        audio.play();
+        playBtn.textContent = '⏸ Pause';
     } else {
-        slotCurr.innerHTML = `<div class="frase-content">${currText}</div>`;
-    }
-
-    // Next
-    if (currentPhraseIndex < total - 1) {
-        const nextText = phrases[currentPhraseIndex + 1];
-        slotNext.innerHTML = nextText === "🎵" ? '<span class="frase-musica">🎵</span>' : nextText;
-    } else {
-        slotNext.innerHTML = '';
+        audio.pause();
+        playBtn.textContent = '▶ Play';
     }
 }
 
-// Navigation Functions
-function nextPhrase() {
-    if (currentPhraseIndex < phrases.length - 1) {
-        currentPhraseIndex++;
-        renderPhrases();
-        highlightActiveRow();
-    }
-}
+// Eventos de teclado
+document.addEventListener('keydown', function (e) {
+    // Ignora se estiver digitando em input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-function prevPhrase() {
-    if (currentPhraseIndex > 0) {
-        currentPhraseIndex--;
-        renderPhrases();
-        highlightActiveRow();
-    }
-}
-
-// Timestamp Marking
-function markTimestamp() {
-    if (currentPhraseIndex === 0) return; // F0 is fixed at 00:00
-
-    const now = getCurrentAudioTime();
-    
-    // Set end of previous, start of current
-    if (!timestamps[currentPhraseIndex]) {
-        timestamps[currentPhraseIndex] = { start: null, end: null };
-    }
-    
-    // Set current phrase start
-    timestamps[currentPhraseIndex].start = now;
-
-    // Auto-close previous phrase end if not set
-    if (currentPhraseIndex > 1 && timestamps[currentPhraseIndex - 1].start !== null) {
-        timestamps[currentPhraseIndex - 1].end = now;
-    }
-
-    // Trigger visual feedback
-    containerFrases.classList.add('flash-success');
-    setTimeout(() => containerFrases.classList.remove('flash-success'), 400);
-
-    renderTable();
-}
-
-// Render Table
-function renderTable() {
-    if (phrases.length <= 1) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td></tr>';
-        return;
-    }
-
-    let html = '';
-    for (let i = 0; i < phrases.length; i++) {
-        const phrase = phrases[i];
-        const ts = timestamps[i] || { start: null, end: null };
-        const isF0 = i === 0;
-
-        const startStr = ts.start !== null ? formatTime(ts.start) : '--:--.---';
-        const endStr = ts.end !== null ? formatTime(ts.end) : '--:--.---';
-        
-        let durationStr = '--:--.---';
-        if (ts.start !== null && ts.end !== null && ts.end >= ts.start) {
-            durationStr = formatTime(ts.end - ts.start);
-        }
-
-        const activeClass = i === currentPhraseIndex ? 'style="background-color: #FFF3E0; font-weight: bold;"' : '';
-
-        html += `
-            <tr ${activeClass} id="row-phrase-${i}">
-                <td>F${i}</td>
-                <td>${phrase}</td>
-                <td><span class="badge-time">${startStr}</span></td>
-                <td><span class="badge-time">${endStr}</span></td>
-                <td>${durationStr}</td>
-                <td>
-                    ${!isF0 ? `<button class="btn-del" onclick="clearMark(${i})">✕</button>` : ''}
-                </td>
-            </tr>
-        `;
-    }
-    tableBody.innerHTML = html;
-}
-
-function clearMark(index) {
-    if (timestamps[index]) {
-        timestamps[index] = { start: null, end: null };
-        renderTable();
-    }
-}
-
-function highlightActiveRow() {
-    const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
-    if (activeRow) {
-        activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    renderTable();
-}
-
-// Export Handling
-btnExportTxt.addEventListener('click', () => exportData('txt'));
-btnExportCsv.addEventListener('click', () => exportData('csv'));
-
-function exportData(format) {
-    const audioName = audioFile ? audioFile.name : 'audio.mp3';
-    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-
-    if (format === 'txt') {
-        let content = `# Temporização - Áudio: ${audioName}\n`;
-        content += `# Gerado em: ${nowStr}\n`;
-        content += `# Total de frases: ${phrases.length - 1}\n`;
-        content += `# Tecla C para avançar, M para marcar tempo\n\n`;
-
-        phrases.forEach((phrase, i) => {
-            const ts = timestamps[i] || { start: null, end: null };
-            if (i === 0) {
-                content += `FRASE 0: 🎵 - 00:00.000 (início)\n`;
-            } else {
-                const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
-                const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
-                const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
-                content += `FRASE ${i}: "${phrase}"\n`;
-                content += `  Início: ${s}\n`;
-                content += `  Fim: ${e}\n`;
-                content += `  Duração: ${dur}\n\n`;
-            }
-        });
-
-        downloadFile(content, 'sincronizacao_audio.txt', 'text/plain');
-    } else if (format === 'csv') {
-        let content = `ID,Frase,Inicio,Fim,Duracao\n`;
-        phrases.forEach((phrase, i) => {
-            const ts = timestamps[i] || { start: null, end: null };
-            const s = ts.start !== null ? formatTime(ts.start) : '00:00.000';
-            const e = ts.end !== null ? formatTime(ts.end) : '00:00.000';
-            const dur = (ts.start !== null && ts.end !== null) ? formatTime(ts.end - ts.start) : '00:00.000';
-            content += `${i},"${phrase.replace(/"/g, '""')}",${s},${e},${dur}\n`;
-        });
-
-        downloadFile(content, 'sincronizacao_audio.csv', 'text/csv');
-    }
-}
-
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type: `${type};charset=utf-8;` });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
-
-// Keyboard Controls
-document.addEventListener('keydown', (e) => {
-    // Ignore keypresses if typing in input elements
-    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
-    if (e.key === 'c' || e.key === 'C' || e.key === 'ArrowRight') {
-        e.preventDefault();
-        nextPhrase();
-    } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        prevPhrase();
-    } else if (e.code === 'Space') {
-        e.preventDefault();
-        if (isPlaying) pauseAudio();
-        else playAudio();
-    } else if (e.key === 'm' || e.key === 'M') {
-        e.preventDefault();
-        markTimestamp();
-    } else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
-        e.preventDefault();
-        exportData('txt');
+    switch (e.key) {
+        case 'd':
+        case 'D':
+            e.preventDefault();
+            avancar();
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            voltar();
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            avancar();
+            break;
+        case ' ':
+            e.preventDefault();
+            togglePlay();
+            break;
     }
 });
 
-btnMarkTime.addEventListener('click', markTimestamp);
+// Botão DESTACAR
+destacarBtn.addEventListener('click', avancar);
+
+// Botões de áudio
+playBtn.addEventListener('click', togglePlay);
+
+stopBtn.addEventListener('click', function () {
+    if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        playBtn.textContent = '▶ Play';
+        progressFill.style.width = '0%';
+    }
+});
+
+// Velocidade
+speedControl.addEventListener('input', function () {
+    const value = parseFloat(this.value);
+    speedValue.textContent = value.toFixed(1) + 'x';
+    if (audio) {
+        audio.playbackRate = value;
+    }
+});
+
+// Volume
+volumeControl.addEventListener('input', function () {
+    if (audio) {
+        audio.volume = parseFloat(this.value);
+    }
+});
+
+// Inicializar
+atualizarDisplay();
