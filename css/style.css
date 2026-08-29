@@ -165,7 +165,7 @@ body {
     font-size: 14px;
 }
 
-/* Container de Frases */
+/* Card Contêiner do Sincronizador */
 .sync-section {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
@@ -176,97 +176,83 @@ body {
     gap: 16px;
 }
 
-/*
-   O "quadro" onde as frases correm: fundo preto, cantos angulares
-   (sem arredondamento), como um telão. Fica dentro do card branco
-   (.sync-section), que continua normal por fora.
-*/
+/* QUADRADO PRETO FIXO (TELÃO ONDE AS FRASES CORREM) */
 .container-frases {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
     width: 100%;
-    max-width: 420px;
-    aspect-ratio: 1 / 1;
+    max-width: 400px;
+    aspect-ratio: 1 / 1; /* Garante o formato de QUADRADO perfeito */
     margin: 0 auto;
-    background-color: #000000;
-    border-radius: 0;
-    border: 2px solid var(--laranja-escuro);
-    padding: 24px 20px;
-    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+    background-color: #000000; /* Fundo preto puro */
+    border-radius: 0px !important; /* Cantos 100% angulares/retos (sem arredondar) */
+    border: 3px solid var(--laranja-escuro);
+    padding: 24px 16px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    position: relative;
 }
 
+/* Slots de Frases (Anterior e Posterior) */
 .frase-slot {
-    width: 100%;
+    width: 90%;
     text-align: center;
-    font-size: 18px;
-    color: #A0A0A0;
-    min-height: 30px;
+    font-size: 16px;
+    color: #888888; /* Tom cinza suave visível sobre o fundo preto */
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/*
-   Cor branca forçada em qualquer coisa dentro do #slot-curr, garantido
-   pelo ID (que o script.js já usa via getElementById, então sempre
-   existe), sem depender de nenhuma classe adicional no HTML.
-*/
+/* RETÂNGULO LARANJA EM DESTAQUE (CANTOS ARREDONDADOS + TEXTO BRANCO) */
+#slot-curr,
+.slot-destaque {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 #slot-curr,
 #slot-curr * {
-    color: #FFFFFF !important;
+    color: #FFFFFF !important; /* Garante que a frase nunca fique verde */
 }
 
-/*
-   A CAIXA laranja em si. Fica sempre parada (sem transição, sem
-   sumir) — é isso que "mantém o quadro" pedido: o retângulo nunca é
-   recriado nem pisca, só o texto de dentro dele se move.
-*/
 #slot-curr .frase-content {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
-    padding: 20px 30px;
-    border-radius: 16px; /* cantos ARREDONDADOS - diferente do quadro preto, que é angular */
-    box-shadow: 0 0 24px rgba(239, 114, 17, 0.45);
+    padding: 16px 24px;
+    border-radius: 16px; /* Cantos arredondados do retângulo interno */
+    box-shadow: 0 0 20px rgba(239, 114, 17, 0.5);
     border: none;
-    width: 100%;
+    width: 92%;
     text-align: center;
     word-break: break-word;
-    overflow: hidden; /* a frase "nasce" de baixo da caixa e não vaza pra fora dela */
+    overflow: hidden;
 }
 
-/*
-   O TEXTO da frase, isolado num <span> por dentro da caixa. Ele já
-   nasce no tamanho/fonte final da caixa (herda os 24px/800 do pai) —
-   só o efeito de entrada (abaixo do exemplo .is-entering) encolhe e
-   abaixa ele temporariamente antes de "subir e crescer" de volta.
-*/
 #slot-curr .frase-text {
     display: inline-block;
     transform-origin: center bottom;
     transform: translateY(0) scale(1);
     opacity: 1;
-    /* Sobe suave, cresce até o tamanho da caixa e assenta rápido */
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.3s ease-out;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease-out;
     will-change: transform, opacity;
 }
 
-/*
-   Estado "karaokê": a frase começa pequena (como se ainda estivesse
-   no tamanho do slot de baixo/próxima) e um pouco abaixo da posição
-   final, invisível. O JS aplica essa classe, força o navegador a
-   registrar esse estado (reflow) e só depois remove — garantindo que
-   a transição acima sempre rode do zero, sem pular direto pro final.
-*/
 #slot-curr .frase-text.is-entering {
-    transform: translateY(26px) scale(0.7);
+    transform: translateY(20px) scale(0.75);
     opacity: 0;
     transition: none;
 }
 
+/* Informações e Atalhos */
 .sync-info {
     display: flex;
     justify-content: space-between;
