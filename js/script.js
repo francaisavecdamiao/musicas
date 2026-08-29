@@ -236,6 +236,7 @@ function nextPhrase() {
         currentPhraseIndex++;
         renderPhrases();
         highlightActiveRow();
+        markTimestamp(); // Registra a minutagem automaticamente ao avançar
     }
 }
 
@@ -388,20 +389,26 @@ window.addEventListener('keydown', (e) => {
 
 // Controle de Atalhos no Teclado
 document.addEventListener('keydown', (e) => {
-    // Ignora atalhos se estiver digitando em caixas de texto
+    // Ignora atalhos se o usuário estiver digitando em caixas de texto
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    // Espaço, D ou Seta Direita avançam / destacam
-    if (e.code === 'Space' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
-        e.preventDefault(); // Garantia extra contra rolagem
+    // N, Enter, D ou Seta Direita -> Avança o destaque + Marca o tempo automaticamente
+    if (['n', 'N', 'Enter', 'd', 'D', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
         nextPhrase();
-    } else if (e.key === 'ArrowLeft') {
+    } 
+    // Seta Esquerda -> Volta para a frase anterior
+    else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         prevPhrase();
-    } else if (e.key === 'm' || e.key === 'M') {
+    } 
+    // M -> Marca o tempo manualmente (revisão)
+    else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         markTimestamp();
-    } else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
+    } 
+    // Ctrl + E -> Exportar TXT
+    else if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
         e.preventDefault();
         exportData('txt');
     }
