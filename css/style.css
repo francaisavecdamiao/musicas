@@ -181,8 +181,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Centraliza verticalmente o bloco de frases */
-    gap: 2px; /* Reduzido para deixar as frases quase coladas */
+    justify-content: center;
+    gap: 0; /* Gap zerado */
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -197,17 +197,29 @@ body {
     position: relative;
 }
 
-/* Slots de Frases Secundárias (Anterior e Posterior) */
+/* Slots de Frases Secundárias (Anterior e Posterior) - Quase coladas */
 .frase-slot {
     width: 90%;
     text-align: center;
-    font-size: 18px; /* Fonte aumentada */
-    font-weight: 700; /* Adicionado negrito */
-    color: #A0A0A0; /* Ajustado contraste para melhor leitura */
-    min-height: 28px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #A0A0A0;
+    line-height: 1.1;
+    margin: 0;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1;
+}
+
+/* Margens negativas sutis para puxar as frases secundárias direto para as bordas do retângulo */
+.container-frases > .frase-slot:first-child {
+    margin-bottom: -6px;
+}
+
+.container-frases > .frase-slot:last-child {
+    margin-top: -6px;
 }
 
 /* RETÂNGULO LARANJA EM DESTAQUE */
@@ -217,8 +229,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 0 0 auto; /* Impede que o elemento estique e afaste as outras frases */
-    margin: 2px 0;
+    flex: 0 0 auto;
+    margin: 0;
+    z-index: 2;
 }
 
 #slot-curr,
