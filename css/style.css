@@ -176,21 +176,22 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO (TELÃO ONDE AS FRASES CORREM) */
+/* QUADRADO PRETO FIXO 1:1 (TELÃO ONDE AS FRASES CORREM) */
 .container-frases {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
+    justify-content: space-between;
+    gap: 8px;
     width: 100%;
     max-width: 400px;
-    aspect-ratio: 1 / 1; /* Garante o formato de QUADRADO perfeito */
+    aspect-ratio: 1 / 1; /* Força proporção quadrada perfeita */
+    min-height: 0;      /* Impede que o Flexbox ignore o aspect-ratio */
     margin: 0 auto;
-    background-color: #000000; /* Fundo preto puro */
-    border-radius: 0px !important; /* Cantos 100% angulares/retos (sem arredondar) */
+    background-color: #000000;
+    border-radius: 0px !important; /* Cantos 100% angulares */
     border: 3px solid var(--laranja-escuro);
-    padding: 24px 16px;
+    padding: 16px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     position: relative;
@@ -200,9 +201,9 @@ body {
 .frase-slot {
     width: 90%;
     text-align: center;
-    font-size: 16px;
-    color: #888888; /* Tom cinza suave visível sobre o fundo preto */
-    min-height: 28px;
+    font-size: 15px;
+    color: #888888;
+    min-height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,19 +216,20 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex: 1; /* Ocupa o centro do quadrado proporcionalmente */
 }
 
 #slot-curr,
 #slot-curr * {
-    color: #FFFFFF !important; /* Garante que a frase nunca fique verde */
+    color: #FFFFFF !important;
 }
 
 #slot-curr .frase-content {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 800;
     color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
-    padding: 16px 24px;
+    padding: 16px 20px;
     border-radius: 16px; /* Cantos arredondados do retângulo interno */
     box-shadow: 0 0 20px rgba(239, 114, 17, 0.5);
     border: none;
@@ -235,6 +237,9 @@ body {
     text-align: center;
     word-break: break-word;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #slot-curr .frase-text {
