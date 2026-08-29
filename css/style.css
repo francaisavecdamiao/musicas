@@ -342,11 +342,11 @@ body {
 
 .slot-destaque .frase-content {
     font-family: 'Feather-Bold', sans-serif;
-    font-size: 26px; /* Maior que as secundárias */
-    color: #FFFFFF; /* Texto em Branco */
-    background-color: var(--laranja-escuro); /* Retângulo Laranja */
+    font-size: 26px;
+    color: #FFFFFF !important; /* Força a cor BRANCA do texto */
+    background-color: var(--laranja-escuro);
     padding: 20px 30px;
-    border-radius: 16px; /* Cantos Arredondados */
+    border-radius: 16px;
     box-shadow: 0 8px 25px rgba(239, 114, 17, 0.35);
     border: none;
     width: 100%;
