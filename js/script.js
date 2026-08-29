@@ -230,13 +230,13 @@ function renderPhrases() {
     }
 }
 
-// Navigation Functions
+// Navigation + Auto Timestamp Marking
 function nextPhrase() {
     if (currentPhraseIndex < phrases.length - 1) {
         currentPhraseIndex++;
         renderPhrases();
         highlightActiveRow();
-        markTimestamp(); // Registra a minutagem automaticamente ao avançar
+        markTimestamp(); // Registra o tempo automaticamente ao avançar
     }
 }
 
@@ -339,8 +339,7 @@ function exportData(format) {
     if (format === 'txt') {
         let content = `# Temporização - Áudio: ${audioName}\n`;
         content += `# Gerado em: ${nowStr}\n`;
-        content += `# Total de frases: ${phrases.length - 1}\n`;
-        content += `# Tecla Espaço para avançar/destacar, M para marcar tempo\n\n`;
+        content += `# Total de frases: ${phrases.length - 1}\n\n`;
 
         phrases.forEach((phrase, i) => {
             const ts = timestamps[i] || { start: null, end: null };
@@ -380,19 +379,12 @@ function downloadFile(content, filename, type) {
     link.click();
 }
 
-// Prevenção Global para a tecla Espaço não rolar a página
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-        e.preventDefault(); // Impede a rolagem da página
-    }
-}, false);
-
-// Controle de Atalhos no Teclado
+// Keyboard Controls
 document.addEventListener('keydown', (e) => {
-    // Ignora atalhos se o usuário estiver digitando em caixas de texto
+    // Ignora atalhos se estiver digitando em caixas de texto
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    // N, Enter, D ou Seta Direita -> Avança o destaque + Marca o tempo automaticamente
+    // N, Enter, D ou Seta Direita -> Avança a frase e marca o tempo automaticamente
     if (['n', 'N', 'Enter', 'd', 'D', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
         nextPhrase();
@@ -402,7 +394,7 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         prevPhrase();
     } 
-    // M -> Marca o tempo manualmente (revisão)
+    // M -> Remarca o tempo manualmente para a frase atual
     else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         markTimestamp();
