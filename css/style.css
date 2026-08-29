@@ -288,7 +288,7 @@ body {
     cursor: pointer;
 }
 
-/* Container de Sincronização (4x3 Proporcional) - Fundo Preto com Cantos Angulares */
+/* Container de Sincronização (Fundo Preto com Cantos Angulares) */
 .sync-section {
     display: flex;
     flex-direction: column;
@@ -302,12 +302,13 @@ body {
     aspect-ratio: 4 / 3;
     background-color: #000000; /* Fundo Preto */
     border: 3px dashed var(--azul-dark);
-    border-radius: 0; /* Cantos Angulares */
-    padding: 30px 20px;
+    border-radius: 0; /* Cantos Angulares do Quadro 4x4 */
+    padding: 15px 20px; /* Reduzido para trazer as frases secundárias mais perto */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    gap: 10px; /* Espaçamento menor e controlado entre as frases */
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     position: relative;
     overflow: hidden;
@@ -322,29 +323,32 @@ body {
     transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* Frases Secundárias: Brancas, Maior Tamanho (20px), Aproximadas */
 .slot-anterior, .slot-posterior {
     font-family: 'Nunito-Regular', sans-serif;
-    font-size: 17px;
-    color: var(--azul-claro);
-    opacity: 0.75;
-    min-height: 40px;
+    font-size: 20px; /* Tamanho maior que antes (17px) */
+    font-weight: 600;
+    color: #FFFFFF; /* Cor branca */
+    opacity: 0.8;
+    min-height: 45px;
     padding: 0 15px;
 }
 
+/* Retângulo em Destaque: Todo em Laranja com Cantos Arredondados */
 .slot-destaque {
     min-height: 90px;
-    width: 90%;
+    width: 95%;
 }
 
 .slot-destaque .frase-content {
     font-family: 'Feather-Bold', sans-serif;
-    font-size: 26px;
-    color: var(--laranja-escuro);
-    background: #FFFFFF;
+    font-size: 26px; /* Maior que as secundárias */
+    color: #FFFFFF; /* Texto em Branco */
+    background-color: var(--laranja-escuro); /* Retângulo Laranja */
     padding: 20px 30px;
-    border-radius: 0; /* Cantos Angulares no destaque interno também */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    border: 3px solid var(--laranja-escuro);
+    border-radius: 16px; /* Cantos Arredondados */
+    box-shadow: 0 8px 25px rgba(239, 114, 17, 0.35);
+    border: none;
     width: 100%;
     text-align: center;
     word-break: break-word;
