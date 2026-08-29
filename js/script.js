@@ -379,10 +379,15 @@ function downloadFile(content, filename, type) {
     link.click();
 }
 
-// Keyboard Controls
+/ Keyboard Controls
 document.addEventListener('keydown', (e) => {
-    // Ignore keypresses if typing in input elements
+    // Evita acionar atalhos se o usuário estiver digitando em campos de texto
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+    // Se for a tecla Espaço, bloqueia o comportamento padrão de rolar a página para baixo
+    if (e.code === 'Space') {
+        e.preventDefault();
+    }
 
     // Espaço, D ou Seta Direita avançam / destacam
     if (e.code === 'Space' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
