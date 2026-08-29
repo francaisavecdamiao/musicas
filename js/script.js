@@ -339,7 +339,7 @@ function exportData(format) {
         let content = `# Temporização - Áudio: ${audioName}\n`;
         content += `# Gerado em: ${nowStr}\n`;
         content += `# Total de frases: ${phrases.length - 1}\n`;
-        content += `# Tecla D para avançar, M para marcar tempo\n\n`;
+        content += `# Tecla Espaço para avançar/destacar, M para marcar tempo\n\n`;
 
         phrases.forEach((phrase, i) => {
             const ts = timestamps[i] || { start: null, end: null };
@@ -384,16 +384,13 @@ document.addEventListener('keydown', (e) => {
     // Ignore keypresses if typing in input elements
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+    // Espaço, D ou Seta Direita avançam / destacam
+    if (e.code === 'Space' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
         e.preventDefault();
         nextPhrase();
     } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         prevPhrase();
-    } else if (e.code === 'Space') {
-        e.preventDefault();
-        if (isPlaying) pauseAudio();
-        else playAudio();
     } else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         markTimestamp();
