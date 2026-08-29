@@ -176,13 +176,38 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO COMPACTO */
+/* Layout flexível lateral para o quadrado preto e o botão de play */
+.sync-main-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+}
+
+/* Botão de play à esquerda do quadrado */
+.sync-side-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.sync-side-controls .btn-play {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(88, 204, 2, 0.3);
+}
+
+/* QUADRADO PRETO FIXO 1:1 - DISTÂNCIA BEM COMPACTA */
 .container-frases {
     position: relative;
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     aspect-ratio: 1 / 1;
-    margin: 0 auto;
+    margin: 0;
     background-color: #000000;
     border-radius: 0px !important;
     border: 3px solid var(--laranja-escuro);
@@ -197,7 +222,7 @@ body {
     transform: translateX(-50%);
     width: 90%;
     text-align: center;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     color: #A0A0A0;
     line-height: 1.2;
@@ -207,10 +232,10 @@ body {
     z-index: 1;
 }
 
-/* 1. FRASE ANTERIOR (Distância reduzida pela metade: 37%) */
+/* 1. FRASE ANTERIOR (Bem próxima ao topo: 42%) */
 .container-frases > .frase-slot:first-child,
 .frase-slot.slot-prev {
-    top: 37%;
+    top: 42%;
     bottom: auto;
 }
 
@@ -235,12 +260,12 @@ body {
 }
 
 #slot-curr .frase-content {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
     color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
-    padding: 14px 20px;
-    border-radius: 16px;
+    padding: 12px 18px;
+    border-radius: 14px;
     box-shadow: 0 0 20px rgba(239, 114, 17, 0.5);
     border: none;
     width: 90%;
@@ -267,10 +292,10 @@ body {
     transition: none;
 }
 
-/* 3. FRASE SEGUINTE (Distância reduzida pela metade: 37%) */
+/* 3. FRASE SEGUINTE (Bem próxima à base: 42%) */
 .container-frases > .frase-slot:last-child,
 .frase-slot.slot-next {
-    bottom: 37%;
+    bottom: 42%;
     top: auto;
 }
 
