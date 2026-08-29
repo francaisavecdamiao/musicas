@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentIndex = 0;
     let marks = [];
 
-    // Formatação de Tempo (MM:SS.mmm)
     function formatTime(seconds) {
         if (isNaN(seconds)) return "00:00.000";
         const mins = Math.floor(seconds / 60);
@@ -43,19 +42,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(3, '0')}`;
     }
 
-    // Carregar Áudio
     audioInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (file) {
             audioFileName.textContent = file.name;
-            const fileURL = URL.createObjectURL(file);
-            audioElement.src = fileURL;
+            audioElement.src = URL.createObjectURL(file);
             btnPlayPause.disabled = false;
             if (btnPlaySync) btnPlaySync.disabled = false;
         }
     });
 
-    // Carregar Texto
     textInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -79,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Controle de Play/Pause Unificado
     function togglePlay() {
         if (audioElement.paused) {
             audioElement.play();
@@ -102,18 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
         totalTimeEl.textContent = formatTime(duration);
         
         if (duration > 0) {
-            progressbarUpdate(current, duration);
+            const percent = (current / duration) * 100;
+            progressBar.style.width = `${percent}%`;
         }
     });
 
     audioElement.addEventListener("loadedmetadata", () => {
         totalTimeEl.textContent = formatTime(audioElement.duration);
     });
-
-    function progressbarUpdate(current, duration) {
-        const percent = (current / duration) * 100;
-        progressBar.style.width = `${percent}%`;
-    }
 
     progressContainer.addEventListener("click", (e) => {
         const rect = progressContainer.getBoundingClientRect();
@@ -133,46 +124,27 @@ document.addEventListener("DOMContentLoaded", () => {
         speedVal.textContent = `${val}x`;
     });
 
-    // Atualizar Display do Sincronizador
     function updateDisplay() {
         if (phrases.length === 0) return;
 
-        // Frase Anterior
-        if (currentIndex > 0) {
-            slotPrev.textContent = phrases[currentIndex - 1];
-        } else {
-            slotPrev.textContent = "";
-        }
-
-        // Frase Atual (Destaque)
+        slotPrev.textContent = currentIndex > 0 ? phrases[currentIndex - 1] : "";
         slotCurr.innerHTML = `<div class="frase-content">${phrases[currentIndex]}</div>`;
-
-        // Frase Posterior
-        if (currentIndex < phrases.length - 1) {
-            slotNext.textContent = phrases[currentIndex + 1];
-        } else {
-            slotNext.textContent = "";
-        }
+        slotNext.textContent = currentIndex < phrases.length - 1 ? phrases[currentIndex + 1] : "";
 
         phraseCounter.textContent = `Frase ${currentIndex + 1} de ${phrases.length}`;
     }
 
-    // Ação Unificada de Marcar Tempo e Avançar
     function markAndNext() {
         if (phrases.length === 0) return;
         const currentTime = audioElement.currentTime;
 
-        // Define o tempo inicial se não houver
         if (marks[currentIndex].start === null) {
             marks[currentIndex].start = currentTime;
         }
-        
-        // Atualiza o tempo final com o momento atual
         marks[currentIndex].end = currentTime;
 
         renderTable();
 
-        // Avança para a próxima frase se houver
         if (currentIndex < phrases.length - 1) {
             currentIndex++;
             updateDisplay();
@@ -186,16 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function nextPhrase() {
-        if (currentIndex < phrases.length - 1) {
-            currentIndex++;
-            updateDisplay();
-        }
-    }
-
     btnMarkTime.addEventListener("click", markAndNext);
 
-    // Atalhos de Teclado
     document.addEventListener("keydown", (e) => {
         if (e.target.tagName === "INPUT") return;
 
@@ -211,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Tabela de Marcações
     function renderTable() {
         marksTableBody.innerHTML = "";
         marks.forEach((mark, index) => {
@@ -245,7 +208,6 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTable();
     };
 
-    // Exportar Arquivos
     btnExportTxt.addEventListener("click", () => {
         const textContent = marks.map(m => `[${formatTime(m.start || 0)} --> ${formatTime(m.end || 0)}] ${m.text}`).join("\n");
         downloadFile(textContent, "marcacoes.txt", "text/plain");
