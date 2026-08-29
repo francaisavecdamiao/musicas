@@ -1,38 +1,10 @@
-/* ==========================================================================
-   PALETA DE CORES DUOLINGO
-   ========================================================================== */
 :root {
-    --rosa: #F2A7AD;
+    --verde-principal: #58CC02;
     --laranja-escuro: #EF7211;
-    --azul-claro: #C2EDF2;
-    --amarelo: #F2A444;
-    --laranja-salmao: #F2B28D;
-    --vermelho: #D93636;
-    --laranja-dark: #C95C08;
-    --vermelho-dark: #B02626;
-    --azul-dark: #8EC2C9;
-    --green-correct: #48B832;
-    --green-correct-dark: #379425;
-    
-    --bg-main: #F7F9FA;
+    --bg-color: #F7F9FA;
     --card-bg: #FFFFFF;
     --text-color: #3C3C3C;
-    --text-muted: #777777;
     --border-color: #E5E5E5;
-}
-
-@font-face {
-    font-family: 'Feather-Bold';
-    src: url('../fonts/Feather-Bold.ttf') format('truetype');
-    font-weight: bold;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Nunito-Regular';
-    src: url('../fonts/Nunito-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
 }
 
 * {
@@ -42,421 +14,273 @@
 }
 
 body {
-    font-family: 'Nunito-Regular', 'Nunito', sans-serif;
-    background-color: var(--bg-main);
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.5;
     padding: 20px;
-    display: flex;
-    justify-content: center;
 }
 
 .app-container {
-    width: 100%;
     max-width: 900px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 24px;
 }
 
-/* Header */
+/* Cabeçalho */
 .app-header {
     text-align: center;
-    padding: 10px 0;
 }
 
 .logo-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
 }
 
-.logo-icon {
-    font-size: 38px;
-    background: var(--amarelo);
-    width: 55px;
-    height: 55px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 18px;
-    box-shadow: 0 4px 0 #D68B30;
+.logo-icon { 
+    font-size: 32px; 
 }
 
-.app-header h1 {
-    font-family: 'Feather-Bold', 'Nunito', sans-serif;
-    font-size: 28px;
-    color: var(--laranja-escuro);
-    letter-spacing: -0.5px;
+.subtitle { 
+    color: #777777; 
+    font-size: 14px; 
 }
 
-.app-header .subtitle {
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 15px;
-    margin-top: 4px;
-}
-
-/* Upload Section */
+/* Seção de Upload */
 .upload-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    display: flex;
+    gap: 16px;
 }
 
 .upload-card {
+    flex: 1;
     background: var(--card-bg);
     border: 2px solid var(--border-color);
-    border-bottom: 5px solid var(--border-color);
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: transform 0.1s ease;
-}
-
-.upload-icon {
-    font-size: 32px;
-}
-
-.upload-card h3 {
-    font-family: 'Feather-Bold', 'Nunito', sans-serif;
-    font-size: 18px;
-    color: var(--text-color);
-}
-
-.file-name {
-    font-size: 13px;
-    color: var(--text-muted);
-    min-height: 20px;
-    word-break: break-all;
-}
-
-/* Botões Gamificados */
-.btn {
-    font-family: 'Feather-Bold', 'Nunito', sans-serif;
-    font-size: 15px;
-    padding: 12px 24px;
     border-radius: 16px;
-    border: none;
+    padding: 16px;
+    text-align: center;
+}
+
+.upload-icon { 
+    font-size: 24px; 
+}
+
+.file-name { 
+    font-size: 12px; 
+    color: #888888; 
+    margin: 8px 0; 
+}
+
+/* Botões */
+.btn {
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 700;
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    transition: all 0.1s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    text-decoration: none;
+    border: none;
+    transition: background-color 0.2s ease;
 }
 
-.btn:active:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow: none !important;
+.btn-primary { 
+    background: var(--verde-principal); 
+    color: #FFFFFF; 
 }
 
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none !important;
+.btn-secondary { 
+    background: #E5E5E5; 
+    color: #555555; 
 }
 
-.btn-primary {
-    background-color: var(--green-correct);
-    color: white;
-    box-shadow: 0 4px 0 var(--green-correct-dark);
+.btn-action { 
+    background: var(--laranja-escuro); 
+    color: #FFFFFF; 
 }
 
-.btn-secondary {
-    background-color: var(--azul-claro);
-    color: #2B6C77;
-    box-shadow: 0 4px 0 var(--azul-dark);
+.btn-outline { 
+    border: 2px solid var(--border-color); 
+    background: transparent; 
 }
 
-.btn-secondary input[type="file"] {
-    display: none;
-}
-
-.btn-action {
-    background-color: var(--amarelo);
-    color: white;
-    box-shadow: 0 4px 0 #D68B30;
-    font-size: 16px;
-    padding: 14px 28px;
-}
-
-.btn-outline {
-    background-color: white;
-    color: var(--laranja-escuro);
-    border: 2px solid var(--laranja-escuro);
-    box-shadow: 0 4px 0 var(--laranja-dark);
+.btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
 }
 
 /* Player de Áudio */
 .player-section {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
-    border-bottom: 5px solid var(--border-color);
-    border-radius: 20px;
-    padding: 20px 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    border-radius: 16px;
+    padding: 20px;
 }
 
 .player-controls-main {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
 }
 
 .btn-play {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background-color: var(--laranja-escuro);
-    color: white;
     border: none;
-    box-shadow: 0 4px 0 var(--laranja-dark);
+    background: var(--verde-principal);
+    color: #FFFFFF;
     font-size: 20px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.1s;
 }
 
-.btn-play:active:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--laranja-dark);
+.btn-play:disabled { 
+    background: #CCCCCC; 
 }
 
-.btn-play:disabled {
-    background-color: #CCCCCC;
-    box-shadow: 0 4px 0 #AAAAAA;
-    cursor: not-allowed;
-}
-
-.time-display {
-    font-family: 'Feather-Bold', monospace;
-    font-size: 16px;
-    color: var(--text-color);
-    background: #F0F0F0;
-    padding: 6px 14px;
-    border-radius: 10px;
+.time-display { 
+    font-weight: 700; 
+    font-size: 14px; 
 }
 
 .progress-bar-container {
-    width: 100%;
-    height: 12px;
+    height: 10px;
     background: #E5E5E5;
-    border-radius: 6px;
+    border-radius: 5px;
+    margin: 16px 0;
     cursor: pointer;
     overflow: hidden;
-    position: relative;
 }
 
 .progress-bar {
     height: 100%;
+    background: var(--verde-principal);
     width: 0%;
-    background-color: var(--green-correct);
-    border-radius: 6px;
-    transition: width 0.1s linear;
 }
 
 .player-extra-controls {
     display: flex;
-    justify-content: space-between;
-    gap: 20px;
+    gap: 24px;
     font-size: 14px;
-    font-weight: 700;
-    color: var(--text-muted);
 }
 
-.control-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.control-group input[type="range"] {
-    accent-color: var(--laranja-escuro);
-    cursor: pointer;
-}
-
-/* Container de Sincronização (Fundo Preto com Cantos Angulares) */
+/* Container de Frases */
 .sync-section {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    gap: 16px;
 }
 
 .container-frases {
-    width: 100%;
-    max-width: 600px;
-    aspect-ratio: 4 / 3;
-    background-color: #000000; /* Fundo Preto */
-    border: 3px dashed var(--azul-dark);
-    border-radius: 0; /* Cantos Angulares do Quadro 4x4 */
-    padding: 15px 20px; /* Reduzido para trazer as frases secundárias mais perto */
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 10px; /* Espaçamento menor e controlado entre as frases */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: hidden;
+    gap: 12px;
+    min-height: 220px;
+    justify-content: center;
 }
 
 .frase-slot {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     text-align: center;
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    font-size: 18px;
+    color: #888888;
+    min-height: 30px;
 }
 
-/* Frases Secundárias: Brancas, Maior Tamanho (20px), Aproximadas */
-.slot-anterior, .slot-posterior {
-    font-family: 'Nunito-Regular', sans-serif;
-    font-size: 20px; /* Tamanho maior que antes (17px) */
-    font-weight: 600;
-    color: #FFFFFF; /* Cor branca */
-    opacity: 0.8;
-    min-height: 45px;
-    padding: 0 15px;
-}
-
-/* Retângulo em Destaque: Todo em Laranja com Cantos Arredondados */
-.slot-destaque {
-    min-height: 90px;
-    width: 95%;
+/* Retângulo em Destaque Laranja + Texto 100% Branco (SEM PISCAR) */
+.slot-destaque,
+#slot-curr,
+#slot-curr * {
     color: #FFFFFF !important;
 }
 
-.slot-destaque .frase-content,
-.slot-destaque .frase-content *,
-.slot-destaque span,
-.slot-destaque div {
-    font-family: 'Feather-Bold', sans-serif;
-    font-size: 26px;
-    color: #FFFFFF !important; /* Elimina qualquer tom verde e força o branco */
+.slot-destaque .frase-content {
+    font-size: 24px;
+    font-weight: 800;
+    color: #FFFFFF !important;
     background-color: var(--laranja-escuro);
     padding: 20px 30px;
     border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(239, 114, 17, 0.35);
+    box-shadow: 0 6px 20px rgba(239, 114, 17, 0.3);
     border: none;
     width: 100%;
     text-align: center;
     word-break: break-word;
-    transform: scale(1.02);
-    animation: popIn 0.3s ease;
+    animation: none !important;
+    transition: none !important;
 }
 
-@keyframes popIn {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1.02); opacity: 1; }
-}
-
-.frase-musica {
-    font-size: 42px !important;
-}
-
-/* Indicadores, Atalhos e Botões de Ação */
 .sync-info {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
     justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    align-items: center;
 }
 
 .status-badge {
-    background: #EAF0F6;
-    color: #4B6584;
-    font-weight: 800;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 15px;
+    background: #F0F0F0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.action-buttons { 
+    display: flex; 
+    gap: 8px; 
 }
 
 .shortcuts-bar {
     display: flex;
+    gap: 8px;
     flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 5px;
+    font-size: 12px;
 }
 
 .shortcut-tag {
-    background: #FFFFFF;
-    border: 1px solid var(--border-color);
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-muted);
+    background: #F0F0F0;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 kbd {
-    background: #F0F0F0;
-    border: 1px solid #CCC;
-    border-radius: 4px;
-    padding: 2px 5px;
-    font-family: monospace;
-    color: #333;
+    background: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-weight: bold;
 }
 
-/* Tabela de Resultados */
+/* Tabela de Marcações */
 .results-section {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
-    border-bottom: 5px solid var(--border-color);
-    border-radius: 20px;
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    border-radius: 16px;
+    padding: 20px;
 }
 
 .results-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
+    margin-bottom: 16px;
 }
 
-.results-header h2 {
-    font-family: 'Feather-Bold', sans-serif;
-    font-size: 20px;
-    color: var(--text-color);
-}
-
-.export-actions {
-    display: flex;
-    gap: 10px;
+.export-actions { 
+    display: flex; 
+    gap: 8px; 
 }
 
 .table-wrapper {
-    max-height: 250px;
+    max-height: 280px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 8px;
 }
 
 .marks-table {
@@ -466,81 +290,36 @@ kbd {
     font-size: 14px;
 }
 
+.marks-table th, 
+.marks-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+
 .marks-table th {
-    background-color: #F8F9FA;
-    padding: 12px 15px;
-    font-family: 'Feather-Bold', sans-serif;
-    color: var(--text-muted);
-    border-bottom: 2px solid var(--border-color);
+    background: #FAFAFA;
     position: sticky;
     top: 0;
 }
 
-.marks-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.marks-table tr:hover {
-    background-color: #FAFAFA;
-}
-
-.empty-msg {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 30px !important;
-}
-
 .badge-time {
+    background: #EBF8FF;
+    color: #2B6CB0;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-family: monospace;
-    font-weight: bold;
-    background: #E8F5E9;
-    color: #2E7D32;
-    padding: 3px 8px;
-    border-radius: 6px;
 }
 
 .btn-del {
     background: none;
     border: none;
-    color: var(--vermelho);
+    color: #E53E3E;
     cursor: pointer;
     font-weight: bold;
-    font-size: 16px;
 }
 
-/* Feedback Visual de Marcação */
-.flash-success {
-    animation: flashGreen 0.4s ease;
-}
-
-@keyframes flashGreen {
-    0% { background-color: rgba(72, 184, 50, 0.6); }
-    100% { background-color: #000000; }
-}
-
-/* Responsividade */
-@media (max-width: 650px) {
-    .upload-section {
-        grid-template-columns: 1fr;
-    }
-    .player-extra-controls {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .sync-info {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .action-buttons {
-        flex-direction: column;
-        width: 100%;
-    }
-    .action-buttons .btn {
-        width: 100%;
-    }
-    .container-frases {
-        aspect-ratio: auto;
-        min-height: 320px;
-    }
+.empty-msg {
+    text-align: center;
+    color: #999999;
+    padding: 20px;
 }
