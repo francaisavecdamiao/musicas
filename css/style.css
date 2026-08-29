@@ -182,7 +182,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0;
+    gap: 10px; /* Espaçamento ajustado para não empilhar/sobrepor */
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -191,36 +191,26 @@ body {
     background-color: #000000;
     border-radius: 0px !important;
     border: 3px solid var(--laranja-escuro);
-    padding: 12px;
+    padding: 16px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     position: relative;
 }
 
-/* SLOTS SECUNDÁRIOS: Sem respiro interno e colados na caixa central */
+/* SLOTS SECUNDÁRIOS: Fonte maior, negrito e respiro visual claro */
 .frase-slot {
     width: 90%;
     text-align: center;
     font-size: 18px;
     font-weight: 700;
     color: #A0A0A0;
-    line-height: 1; /* Elimina folga vertical de fonte */
+    line-height: 1.2;
     margin: 0;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
-}
-
-/* Puxa o texto da frase superior para baixo, colando na borda laranja */
-.container-frases > .frase-slot:first-child {
-    transform: translateY(12px);
-}
-
-/* Puxa o texto da frase inferior para cima, colando na borda laranja */
-.container-frases > .frase-slot:last-child {
-    transform: translateY(-12px);
 }
 
 /* RETÂNGULO LARANJA EM DESTAQUE */
