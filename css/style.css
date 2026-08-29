@@ -83,6 +83,14 @@ body {
     cursor: pointer;
     border: none;
     transition: background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn input[type="file"] {
+    display: none;
 }
 
 .btn-primary { 
@@ -166,6 +174,19 @@ body {
     display: flex;
     gap: 24px;
     font-size: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.control-group label {
+    font-weight: 600;
+    font-size: 13px;
 }
 
 /* Card Contêiner do Sincronizador */
@@ -202,7 +223,7 @@ body {
     box-shadow: 0 4px 12px rgba(88, 204, 2, 0.3);
 }
 
-/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO ABSOLUTO PARA EVITAR EMPILHAMENTO */
+/* QUADRADO PRETO FIXO 1:1 - DISTÂNCIA DE 24% */
 .container-frases {
     position: relative;
     width: 100%;
@@ -216,7 +237,7 @@ body {
     overflow: hidden;
 }
 
-/* FRASES SECUNDÁRIAS (Fixadas no topo e na base com distância equilibrada) */
+/* BASE GERAL DAS FRASES */
 .frase-slot {
     position: absolute;
     left: 50%;
@@ -233,14 +254,14 @@ body {
     z-index: 1;
 }
 
-/* Frase Anterior (Próxima do topo) */
+/* 1. FRASE ANTERIOR (Posicionada exatamente a 24% do topo) */
 .container-frases > .frase-slot:first-child,
-.frase-slot.slot-prev {
-    top: 28%;
+.frase-slot.slot-anterior {
+    top: 24%;
     bottom: auto;
 }
 
-/* FRASE DESTAQUE (Centro Exato) */
+/* 2. FRASE DESTAQUE (Centro Exato a 50%) */
 #slot-curr,
 .slot-destaque {
     position: absolute;
@@ -260,7 +281,8 @@ body {
     color: #FFFFFF !important;
 }
 
-#slot-curr .frase-content {
+#slot-curr .frase-content,
+.slot-destaque .frase-content {
     font-size: 18px;
     font-weight: 800;
     color: #FFFFFF !important;
@@ -293,10 +315,10 @@ body {
     transition: none;
 }
 
-/* Frase Seguinte (Próxima da base) */
+/* 3. FRASE POSTERIOR (Posicionada exatamente a 24% da base -> 76%) */
 .container-frases > .frase-slot:last-child,
-.frase-slot.slot-next {
-    bottom: 28%;
+.frase-slot.slot-posterior {
+    bottom: 24%;
     top: auto;
 }
 
@@ -313,11 +335,6 @@ body {
     border-radius: 8px;
     font-weight: 700;
     font-size: 13px;
-}
-
-.action-buttons { 
-    display: flex; 
-    gap: 8px; 
 }
 
 .shortcuts-bar {
@@ -385,22 +402,6 @@ kbd {
     background: #FAFAFA;
     position: sticky;
     top: 0;
-}
-
-.badge-time {
-    background: #EBF8FF;
-    color: #2B6CB0;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-}
-
-.btn-del {
-    background: none;
-    border: none;
-    color: #E53E3E;
-    cursor: pointer;
-    font-weight: bold;
 }
 
 .empty-msg {
