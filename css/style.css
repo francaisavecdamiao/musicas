@@ -182,7 +182,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0; /* Gap zerado */
+    gap: 0;
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
@@ -197,14 +197,14 @@ body {
     position: relative;
 }
 
-/* Slots de Frases Secundárias (Anterior e Posterior) - Quase coladas */
+/* SLOTS SECUNDÁRIOS: Sem respiro interno e colados na caixa central */
 .frase-slot {
     width: 90%;
     text-align: center;
     font-size: 18px;
     font-weight: 700;
     color: #A0A0A0;
-    line-height: 1.1;
+    line-height: 1; /* Elimina folga vertical de fonte */
     margin: 0;
     padding: 0;
     display: flex;
@@ -213,13 +213,14 @@ body {
     z-index: 1;
 }
 
-/* Margens negativas sutis para puxar as frases secundárias direto para as bordas do retângulo */
+/* Puxa o texto da frase superior para baixo, colando na borda laranja */
 .container-frases > .frase-slot:first-child {
-    margin-bottom: -6px;
+    transform: translateY(12px);
 }
 
+/* Puxa o texto da frase inferior para cima, colando na borda laranja */
 .container-frases > .frase-slot:last-child {
-    margin-top: -6px;
+    transform: translateY(-12px);
 }
 
 /* RETÂNGULO LARANJA EM DESTAQUE */
