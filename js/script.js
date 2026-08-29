@@ -379,19 +379,21 @@ function downloadFile(content, filename, type) {
     link.click();
 }
 
-/ Keyboard Controls
-document.addEventListener('keydown', (e) => {
-    // Evita acionar atalhos se o usuário estiver digitando em campos de texto
-    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
-    // Se for a tecla Espaço, bloqueia o comportamento padrão de rolar a página para baixo
-    if (e.code === 'Space') {
-        e.preventDefault();
+// Prevenção Global para a tecla Espaço não rolar a página
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault(); // Impede a rolagem da página
     }
+}, false);
+
+// Controle de Atalhos no Teclado
+document.addEventListener('keydown', (e) => {
+    // Ignora atalhos se estiver digitando em caixas de texto
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
     // Espaço, D ou Seta Direita avançam / destacam
     if (e.code === 'Space' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
-        e.preventDefault();
+        e.preventDefault(); // Garantia extra contra rolagem
         nextPhrase();
     } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
