@@ -193,14 +193,21 @@ body {
     min-height: 30px;
 }
 
-/* Retângulo em Destaque Laranja + Texto 100% Branco (SEM PISCAR) */
-.slot-destaque,
+/*
+   Retângulo em destaque (laranja) da frase atual.
+   Antes essas regras dependiam de uma classe ".slot-destaque" que
+   precisava estar em algum elemento pai vindo do HTML — se essa classe
+   não estivesse exatamente ali, o fundo/texto branco simplesmente não
+   era aplicado e o texto caía na cor herdada (o que dava a aparência
+   "verde"). Agora a regra usa o ID #slot-curr, que o script.js já
+   garante que existe, então o branco sempre é aplicado.
+*/
 #slot-curr,
 #slot-curr * {
     color: #FFFFFF !important;
 }
 
-.slot-destaque .frase-content {
+#slot-curr .frase-content {
     font-size: 24px;
     font-weight: 800;
     color: #FFFFFF !important;
@@ -212,8 +219,28 @@ body {
     width: 100%;
     text-align: center;
     word-break: break-word;
-    animation: none !important;
-    transition: none !important;
+
+    /* Estado "assentado" (posição final) */
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    /* Movimento suave que "estoura" um pouquinho e para rápido */
+    transition:
+        transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.2s ease-out;
+    will-change: transform, opacity;
+}
+
+/*
+   Estado inicial aplicado por uma fração de segundo pelo JS sempre que
+   uma nova frase entra em destaque. Como o elemento .frase-content
+   agora é reaproveitado (não recriado a cada troca), a transição acima
+   consegue animar DESSE estado até o estado final — em vez de um "pop"
+   seco (o piscar que você via antes).
+*/
+#slot-curr .frase-content.is-entering {
+    transform: translateY(10px) scale(0.94);
+    opacity: 0;
+    transition: none;
 }
 
 .sync-info {
