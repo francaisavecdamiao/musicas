@@ -225,34 +225,41 @@ function renderPhrases() {
     }
 }
 
-// Atualiza o slot em destaque SEM recriar o elemento a cada troca de frase.
-// Recriar o <div> (via innerHTML) a cada chamada é o motivo do "piscar":
-// um elemento novo não tem estado anterior, então nenhuma transição CSS
-// consegue rodar - a troca sempre é instantânea (um "pop" seco).
-// Reaproveitando o mesmo elemento e só trocando o texto, a transição
-// definida no CSS (transform + opacity) passa a funcionar de verdade.
+// Atualiza o slot em destaque com efeito "karaokê": a CAIXA laranja
+// (.frase-content, já fixa no HTML) nunca é recriada nem some - ela
+// fica parada o tempo todo, é isso que mantém o quadro sem piscar.
+// Só o TEXTO (um <span class="frase-text"> dentro dela) é trocado, e a
+// cada troca ele sobe + cresce do tamanho pequeno até o tamanho final
+// da caixa, com uma transição CSS de verdade.
 function updateCurrentSlot(text) {
-    let contentEl = slotCurr.querySelector('.frase-content');
+    const contentEl = slotCurr.querySelector('.frase-content');
+    let textEl = contentEl.querySelector('.frase-text');
 
-    if (!contentEl) {
-        contentEl = document.createElement('div');
-        contentEl.className = 'frase-content';
-        slotCurr.innerHTML = '';
-        slotCurr.appendChild(contentEl);
+    // Na primeira chamada, o HTML só tem o texto "🎵" solto dentro da
+    // caixa (sem o span) - criamos o span uma única vez aqui.
+    if (!textEl) {
+        contentEl.innerHTML = '';
+        textEl = document.createElement('span');
+        textEl.className = 'frase-text';
+        contentEl.appendChild(textEl);
     }
 
-    contentEl.textContent = text;
+    // 1) Aplica o estado inicial (pequeno, embaixo, transparente) e já
+    //    coloca o novo texto nesse estado.
+    textEl.classList.add('is-entering');
+    textEl.textContent = text;
 
-    // Reinicia a animação de entrada: tira a classe, força um reflow
-    // (void contentEl.offsetWidth) e recoloca, para o navegador "sentir"
-    // que o estado mudou e disparar a transição do zero a cada frase.
-    contentEl.classList.remove('is-entering');
-    void contentEl.offsetWidth;
-    contentEl.classList.add('is-entering');
+    // 2) Força o navegador a calcular/"fotografar" esse estado inicial
+    //    ANTES de tirar a classe. Sem isso, o navegador às vezes junta
+    //    as duas mudanças no mesmo frame e a transição é pulada (o
+    //    "piscar" que você ainda via).
+    void textEl.offsetHeight;
 
-    requestAnimationFrame(() => {
-        contentEl.classList.remove('is-entering');
-    });
+    // 3) Remove a classe: agora existe um "antes" (pequeno/embaixo) e
+    //    um "depois" (tamanho normal) já pintados em frames diferentes,
+    //    então a transição do CSS roda de verdade, subindo e crescendo
+    //    suavemente até o tamanho/fonte da caixa laranja.
+    textEl.classList.remove('is-entering');
 }
 
 // Navegação entre Frases + Marcação Automática
