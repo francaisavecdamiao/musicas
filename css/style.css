@@ -176,52 +176,55 @@ body {
     gap: 16px;
 }
 
-/* QUADRADO PRETO FIXO 1:1 */
+/* QUADRADO PRETO FIXO 1:1 - POSICIONAMENTO ANCORADO */
 .container-frases {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between; /* Distribui topo, centro e base */
+    position: relative; /* Âncora para as frases absolutas */
     width: 100%;
     max-width: 400px;
     aspect-ratio: 1 / 1;
-    min-height: 0;
     margin: 0 auto;
     background-color: #000000;
     border-radius: 0px !important;
     border: 3px solid var(--laranja-escuro);
-    padding: 28px 16px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
     overflow: hidden;
-    position: relative;
 }
 
-/* SLOTS SECUNDÁRIOS */
+/* BASE GERAL DAS FRASES */
 .frase-slot {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     width: 90%;
-    height: 48px;
     text-align: center;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     color: #A0A0A0;
     line-height: 1.2;
-    margin: 0;
-    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto; /* Impede o slot de ocupar espaço vertical extra */
     z-index: 1;
 }
 
-/* RETÂNGULO LARANJA EM DESTAQUE */
+/* 1. FRASE ANTERIOR (Fixada no Topo - 12% da margem superior) */
+.container-frases > .frase-slot:first-child,
+.frase-slot.slot-prev {
+    top: 12%;
+    bottom: auto;
+}
+
+/* 2. FRASE DESTAQUE (Fixada exatamente no Centro) */
 #slot-curr,
 .slot-destaque {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 0 0 auto;
     margin: 0;
     z-index: 2;
 }
@@ -240,7 +243,7 @@ body {
     border-radius: 16px;
     box-shadow: 0 0 20px rgba(239, 114, 17, 0.5);
     border: none;
-    width: 92%;
+    width: 90%;
     text-align: center;
     word-break: break-word;
     overflow: hidden;
@@ -262,6 +265,13 @@ body {
     transform: translateY(20px) scale(0.75);
     opacity: 0;
     transition: none;
+}
+
+/* 3. FRASE SEGUINTE (Fixada na Base - 12% da margem inferior) */
+.container-frases > .frase-slot:last-child,
+.frase-slot.slot-next {
+    bottom: 12%;
+    top: auto;
 }
 
 /* Informações e Atalhos */
