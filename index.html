@@ -1,72 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quadro de Frases</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizador Áudio-Texto</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <header>
+        <h1>🎵 Sincronizador Áudio-Texto</h1>
+    </header>
 
-  <main class="container">
-    <!-- Quadro 4x4 -->
-    <div class="quadro-grid" id="quadroGrid">
-      <div class="celula" id="celula-1">
-        <p class="frase-secundaria">Frase Secundária 1</p>
-      </div>
-      <div class="celula" id="celula-2">
-        <p class="frase-secundaria">Frase Secundária 2</p>
-      </div>
-      <div class="celula" id="celula-3">
-        <p class="frase-secundaria">Frase Secundária 3</p>
-      </div>
-      <div class="celula" id="celula-4">
-        <p class="frase-secundaria">Frase Secundária 4</p>
-      </div>
-      <div class="celula" id="celula-5">
-        <p class="frase-secundaria">Frase Secundária 5</p>
-      </div>
-      <div class="celula destaque" id="celula-destaque">
-        <p class="frase-destaque">ESTA É A FRASE EM DESTAQUE</p>
-      </div>
-      <div class="celula" id="celula-7">
-        <p class="frase-secundaria">Frase Secundária 7</p>
-      </div>
-      <div class="celula" id="celula-8">
-        <p class="frase-secundaria">Frase Secundária 8</p>
-      </div>
-      <div class="celula" id="celula-9">
-        <p class="frase-secundaria">Frase Secundária 9</p>
-      </div>
-      <div class="celula" id="celula-10">
-        <p class="frase-secundaria">Frase Secundária 10</p>
-      </div>
-      <div class="celula" id="celula-11">
-        <p class="frase-secundaria">Frase Secundária 11</p>
-      </div>
-      <div class="celula" id="celula-12">
-        <p class="frase-secundaria">Frase Secundária 12</p>
-      </div>
-      <div class="celula" id="celula-13">
-        <p class="frase-secundaria">Frase Secundária 13</p>
-      </div>
-      <div class="celula" id="celula-14">
-        <p class="frase-secundaria">Frase Secundária 14</p>
-      </div>
-      <div class="celula" id="celula-15">
-        <p class="frase-secundaria">Frase Secundária 15</p>
-      </div>
-      <div class="celula" id="celula-16">
-        <p class="frase-secundaria">Frase Secundária 16</p>
-      </div>
-    </div>
+    <section id="upload">
+        <div class="upload-group">
+            <label for="audioFile" class="upload-label">Selecionar Áudio (MP3/WAV)</label>
+            <input type="file" id="audioFile" accept=".mp3,.wav,audio/*">
+            <span id="audioName"></span>
+        </div>
+        <div class="upload-group">
+            <label for="textFile" class="upload-label">Selecionar Texto (.txt)</label>
+            <input type="file" id="textFile" accept=".txt">
+        </div>
+    </section>
 
-    <!-- Controles de Ação / Painel Interativo -->
-    <div class="controles">
-      <button id="btnDestacar" class="btn-destacar">Destacar (Pressione 'D')</button>
-    </div>
-  </main>
+    <section id="controls">
+        <div class="controls-row">
+            <button id="playBtn">▶ Play</button>
+            <button id="stopBtn">⏹ Stop</button>
+            <label>
+                Velocidade:
+                <input type="range" id="speedControl" min="0.5" max="2.0" step="0.1" value="1.0">
+                <span id="speedValue">1.0x</span>
+            </label>
+            <label>
+                Volume:
+                <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="1.0">
+            </label>
+        </div>
+        <div id="progressBar">
+            <div id="progressFill"></div>
+        </div>
+    </section>
 
-  <script src="script.js"></script>
+    <section id="mainContainer">
+        <div id="fraseContainer">
+            <div id="fraseAnterior" class="frase-secundaria"></div>
+            <div id="fraseDestaque" class="frase-destaque">🎵</div>
+            <div id="frasePosterior" class="frase-secundaria"></div>
+        </div>
+    </section>
+
+    <section id="info">
+        <span id="contador">Frase 0 de 0</span>
+        <button id="destacarBtn">DESTACAR</button>
+    </section>
+
+    <footer>
+        <p>Teclas: <strong>D</strong> = Próxima | <strong>←</strong> = Voltar | <strong>Espaço</strong> = Play/Pause</p>
+    </footer>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
