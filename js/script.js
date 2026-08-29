@@ -1,4 +1,4 @@
-// State Management
+// Gerenciamento de Estado
 let audioFile = null;
 let audioBuffer = null;
 let audioContext = null;
@@ -13,7 +13,7 @@ let phrases = ["🎵"];
 let currentPhraseIndex = 0;
 let timestamps = [{ start: 0, end: 0 }];
 
-// DOM Elements
+// Elementos do DOM
 const audioInput = document.getElementById('audio-input');
 const textInput = document.getElementById('text-input');
 const audioFileName = document.getElementById('audio-file-name');
@@ -33,7 +33,6 @@ const speedVal = document.getElementById('speed-val');
 const slotPrev = document.getElementById('slot-prev');
 const slotCurr = document.getElementById('slot-curr');
 const slotNext = document.getElementById('slot-next');
-const containerFrases = document.getElementById('container-frases');
 const phraseCounter = document.getElementById('phrase-counter');
 
 const btnNextPhrase = document.getElementById('btn-next-phrase');
@@ -42,7 +41,7 @@ const btnExportTxt = document.getElementById('btn-export-txt');
 const btnExportCsv = document.getElementById('btn-export-csv');
 const tableBody = document.getElementById('marks-table-body');
 
-// Audio Context Init
+// Inicialização do AudioContext
 function getAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -53,7 +52,7 @@ function getAudioContext() {
     return audioContext;
 }
 
-// Utility: Format Seconds to MM:SS.mmm
+// Utilitário: Formatar Segundos em MM:SS.mmm
 function formatTime(sec) {
     if (isNaN(sec) || sec < 0) sec = 0;
     const m = Math.floor(sec / 60);
@@ -62,7 +61,7 @@ function formatTime(sec) {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
 }
 
-// Upload Audio
+// Upload de Áudio
 audioInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -79,7 +78,7 @@ audioInput.addEventListener('change', async (e) => {
     updateProgressUI();
 });
 
-// Upload Text
+// Upload de Texto
 textInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -108,7 +107,7 @@ textInput.addEventListener('change', (e) => {
     reader.readAsText(file);
 });
 
-// Playback Logic
+// Reprodução de Áudio
 function playAudio() {
     if (!audioBuffer) return;
     const ctx = getAudioContext();
@@ -168,7 +167,7 @@ function updateProgressUI() {
     progressBar.style.width = `${pct}%`;
 }
 
-// Seek on Progress Bar
+// Avançar/Retroceder no Player
 progressContainer.addEventListener('click', (e) => {
     if (!audioBuffer) return;
     const rect = progressContainer.getBoundingClientRect();
@@ -190,7 +189,7 @@ btnPlayPause.addEventListener('click', () => {
     else playAudio();
 });
 
-// Controls
+// Controles de Volume e Velocidade
 volumeControl.addEventListener('input', (e) => {
     volume = parseFloat(e.target.value);
 });
@@ -200,37 +199,37 @@ speedControl.addEventListener('input', (e) => {
     speedVal.textContent = `${playbackRate.toFixed(1)}x`;
 });
 
-// Render Phrase Container
+// Renderização dos Slots de Frase
 function renderPhrases() {
     const total = phrases.length;
     phraseCounter.textContent = `Frase ${currentPhraseIndex} de ${total - 1}`;
 
-    // Prev
+    // Anterior
     if (currentPhraseIndex > 0) {
         const prevText = phrases[currentPhraseIndex - 1];
-        slotPrev.innerHTML = prevText === "🎵" ? '<span class="frase-musica">🎵</span>' : prevText;
+        slotPrev.innerHTML = prevText === "🎵" ? '<span>🎵</span>' : prevText;
     } else {
         slotPrev.innerHTML = '';
     }
 
-    // Curr (Destaque Laranja + Texto Branco)
+    // Destaque Laranja com Texto Branco Forçado
     const currText = phrases[currentPhraseIndex];
     if (currText === "🎵") {
-        slotCurr.innerHTML = '<div class="frase-content frase-musica">🎵</div>';
+        slotCurr.innerHTML = '<div class="frase-content" style="color: #FFFFFF !important;">🎵</div>';
     } else {
-        slotCurr.innerHTML = `<div class="frase-content">${currText}</div>`;
+        slotCurr.innerHTML = `<div class="frase-content" style="color: #FFFFFF !important;">${currText}</div>`;
     }
 
-    // Next
+    // Próxima
     if (currentPhraseIndex < total - 1) {
         const nextText = phrases[currentPhraseIndex + 1];
-        slotNext.innerHTML = nextText === "🎵" ? '<span class="frase-musica">🎵</span>' : nextText;
+        slotNext.innerHTML = nextText === "🎵" ? '<span>🎵</span>' : nextText;
     } else {
         slotNext.innerHTML = '';
     }
 }
 
-// Navigation + Auto Timestamp Marking
+// Navegação entre Frases + Marcação Automática
 function nextPhrase() {
     if (currentPhraseIndex < phrases.length - 1) {
         currentPhraseIndex++;
@@ -248,7 +247,7 @@ function prevPhrase() {
     }
 }
 
-// Timestamp Marking
+// Marcação de Tempo Sem Animações Visualmente Perturbadoras
 function markTimestamp() {
     if (currentPhraseIndex === 0) return;
 
@@ -264,13 +263,10 @@ function markTimestamp() {
         timestamps[currentPhraseIndex - 1].end = now;
     }
 
-    containerFrases.classList.add('flash-success');
-    setTimeout(() => containerFrases.classList.remove('flash-success'), 400);
-
     renderTable();
 }
 
-// Render Table
+// Renderizar Tabela
 function renderTable() {
     if (phrases.length <= 1) {
         tableBody.innerHTML = '<tr><td colspan="6" class="empty-msg">Nenhum texto carregado. Faça upload do arquivo .txt para começar.</td></tr>';
@@ -316,7 +312,7 @@ function clearMark(index) {
     }
 }
 
-// Rola APENAS a div da tabela internamente, sem mexer na página inteira
+// Rola APENAS o container da tabela (A página web inteira não se move)
 function highlightActiveRow() {
     const activeRow = document.getElementById(`row-phrase-${currentPhraseIndex}`);
     const tableWrapper = document.querySelector('.table-wrapper');
@@ -335,7 +331,7 @@ function highlightActiveRow() {
     }
 }
 
-// Export Handling
+// Exportar Arquivos
 btnExportTxt.addEventListener('click', () => exportData('txt'));
 btnExportCsv.addEventListener('click', () => exportData('csv'));
 
@@ -386,7 +382,7 @@ function downloadFile(content, filename, type) {
     link.click();
 }
 
-// Bloqueio Global de Rolagem pelas Teclas de Comando
+// Intercepta e Bloqueia Ações Padrão de Rolagem na Janela Principal
 window.addEventListener('keydown', (e) => {
     if (['Space', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.code) && 
         !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
@@ -398,7 +394,7 @@ window.addEventListener('keydown', (e) => {
 document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-    // Teclas N, Enter ou Seta Direita avançam e marcam tempo automaticamente
+    // N, Enter, Espaço ou Seta Direita avançam a frase e registram a minutagem
     if (['n', 'N', 'Enter', 'ArrowRight'].includes(e.key) || e.code === 'Space') {
         e.preventDefault();
         nextPhrase();
